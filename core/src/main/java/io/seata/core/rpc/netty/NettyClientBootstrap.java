@@ -168,7 +168,7 @@ public class NettyClientBootstrap implements RemotingBootstrap {
 
     /**
      * Gets new channel.
-     *
+     * 新建通道
      * @param address the address
      * @return the new channel
      */

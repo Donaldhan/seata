@@ -191,6 +191,7 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("register TM success. client version:{}, server version:{},channel:{}", registerTMRequest.getVersion(), registerTMResponse.getVersion(), channel);
         }
+        //注册连接TC通道
         getClientChannelManager().registerChannel(serverAddress, channel);
     }
 
@@ -211,6 +212,10 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
         instance = null;
     }
 
+    /**
+     * 创建TM注册请求PoolKey
+     * @return
+     */
     @Override
     protected Function<String, NettyPoolKey> getPoolKeyFunction() {
         return severAddress -> {

@@ -138,7 +138,9 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
         super(messageExecutor);
         this.transactionRole = transactionRole;
         clientBootstrap = new NettyClientBootstrap(nettyClientConfig, eventExecutorGroup, transactionRole);
+        //客户端处理器
         clientBootstrap.setChannelHandlers(new ClientHandler());
+        //客户端通道管理器
         clientChannelManager = new NettyClientChannelManager(
             new NettyPoolableFactory(this, clientBootstrap), getPoolKeyFunction(), nettyClientConfig);
     }

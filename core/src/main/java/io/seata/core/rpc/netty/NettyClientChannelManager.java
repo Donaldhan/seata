@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 
 /**
  * Netty client pool manager.
- *
+ * netty 客户端管理池
  * @author slievrly
  * @author zhaojun
  */
@@ -58,6 +58,11 @@ class NettyClientChannelManager {
 
     private Function<String, NettyPoolKey> poolKeyFunction;
 
+    /**
+     * @param keyPoolableFactory
+     * @param poolKeyFunction
+     * @param clientConfig
+     */
     NettyClientChannelManager(final NettyPoolableFactory keyPoolableFactory, final Function<String, NettyPoolKey> poolKeyFunction,
                                      final NettyClientConfig clientConfig) {
         nettyClientKeyPool = new GenericKeyedObjectPool<>(keyPoolableFactory);
@@ -199,6 +204,11 @@ class NettyClientChannelManager {
         nettyClientKeyPool.invalidateObject(poolKeyMap.get(serverAddress), channel);
     }
 
+    /**
+     * 注册连接TC通道
+     * @param serverAddress
+     * @param channel
+     */
     void registerChannel(final String serverAddress, final Channel channel) {
         Channel channelToServer = channels.get(serverAddress);
         if (channelToServer != null && channelToServer.isActive()) {
@@ -222,9 +232,11 @@ class NettyClientChannelManager {
             NettyPoolKey currentPoolKey = poolKeyFunction.apply(serverAddress);
             NettyPoolKey previousPoolKey = poolKeyMap.putIfAbsent(serverAddress, currentPoolKey);
             if (previousPoolKey != null && previousPoolKey.getMessage() instanceof RegisterRMRequest) {
+                //TM 服务
                 RegisterRMRequest registerRMRequest = (RegisterRMRequest) currentPoolKey.getMessage();
                 ((RegisterRMRequest) previousPoolKey.getMessage()).setResourceIds(registerRMRequest.getResourceIds());
             }
+            //创建通道对象
             channelFromPool = nettyClientKeyPool.borrowObject(poolKeyMap.get(serverAddress));
             channels.put(serverAddress, channelFromPool);
         } catch (Exception exx) {
