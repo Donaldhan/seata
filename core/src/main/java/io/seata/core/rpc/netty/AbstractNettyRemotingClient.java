@@ -110,6 +110,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
     public void init() {
         timerExecutor.scheduleAtFixedRate(new Runnable() {
             @Override
+            //重连事务分组的TC
             public void run() {
                 clientChannelManager.reconnect(getTransactionServiceGroup());
             }
@@ -126,6 +127,12 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
         clientBootstrap.start();
     }
 
+    /**
+     * @param nettyClientConfig
+     * @param eventExecutorGroup
+     * @param messageExecutor
+     * @param transactionRole
+     */
     public AbstractNettyRemotingClient(NettyClientConfig nettyClientConfig, EventExecutorGroup eventExecutorGroup,
                                        ThreadPoolExecutor messageExecutor, NettyPoolKey.TransactionRole transactionRole) {
         super(messageExecutor);
@@ -198,6 +205,10 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
         return super.sendSync(channel, rpcMessage, NettyClientConfig.getRpcRequestTimeout());
     }
 
+    /**
+     * @param channel client channel
+     * @param msg     transaction message {@link io.seata.core.protocol}
+     */
     @Override
     public void sendAsyncRequest(Channel channel, Object msg) {
         if (channel == null) {
@@ -424,6 +435,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
                     }
                     try {
                         String serverAddress = NetUtil.toStringAddress(ctx.channel().remoteAddress());
+                        //失效与tc端的通道
                         clientChannelManager.invalidateObject(serverAddress, ctx.channel());
                     } catch (Exception exx) {
                         LOGGER.error(exx.getMessage());
@@ -436,6 +448,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
                         if (LOGGER.isDebugEnabled()) {
                             LOGGER.debug("will send ping msg,channel {}", ctx.channel());
                         }
+                        //发送心跳消息
                         AbstractNettyRemotingClient.this.sendAsyncRequest(ctx.channel(), HeartbeatMessage.PING);
                     } catch (Throwable throwable) {
                         LOGGER.error("send request error: {}", throwable.getMessage(), throwable);

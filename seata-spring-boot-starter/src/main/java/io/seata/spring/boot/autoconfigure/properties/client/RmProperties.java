@@ -29,7 +29,10 @@ import static io.seata.common.DefaultValues.DEFAULT_SAGA_JSON_PARSER;
 import static io.seata.spring.boot.autoconfigure.StarterConstants.CLIENT_RM_PREFIX;
 
 /**
+ * RM 属性配置
+ *
  * @author xingfudeshi@gmail.com
+ *
  */
 @Component
 @ConfigurationProperties(prefix = CLIENT_RM_PREFIX)

@@ -87,7 +87,7 @@ class NettyClientChannelManager {
 
     /**
      * Acquire netty client channel connected to remote server.
-     *
+     * 获取连接远端server的netty客户端通道
      * @param serverAddress server address
      * @return netty channel
      */
@@ -139,7 +139,7 @@ class NettyClientChannelManager {
 
     /**
      * Destroy channel.
-     *
+     * 销毁通道
      * @param serverAddress server address
      * @param channel channel
      */
@@ -157,12 +157,13 @@ class NettyClientChannelManager {
 
     /**
      * Reconnect to remote server of current transaction service group.
-     *
+     * 重连当前事物服务组的远端server
      * @param transactionServiceGroup transaction service group
      */
     void reconnect(String transactionServiceGroup) {
         List<String> availList = null;
         try {
+            //从注册器获取事务分组的服务地址
             availList = getAvailServerList(transactionServiceGroup);
         } catch (Exception e) {
             LOGGER.error("Failed to get available servers: {}", e.getMessage(), e);
@@ -186,6 +187,7 @@ class NettyClientChannelManager {
         }
         for (String serverAddress : availList) {
             try {
+                //建立连接通道
                 acquireChannel(serverAddress);
             } catch (Exception e) {
                 LOGGER.error("{} can not connect to {} cause:{}",FrameworkErrorCode.NetConnect.getErrCode(), serverAddress, e.getMessage(), e);
@@ -205,6 +207,11 @@ class NettyClientChannelManager {
         channels.put(serverAddress, channel);
     }
 
+    /**
+     * 连接TC服务端
+     * @param serverAddress
+     * @return
+     */
     private Channel doConnect(String serverAddress) {
         Channel channelToServer = channels.get(serverAddress);
         if (channelToServer != null && channelToServer.isActive()) {
@@ -227,6 +234,12 @@ class NettyClientChannelManager {
         return channelFromPool;
     }
 
+    /**
+     * 从注册器获取事务分组的服务地址
+     * @param transactionServiceGroup
+     * @return
+     * @throws Exception
+     */
     private List<String> getAvailServerList(String transactionServiceGroup) throws Exception {
         List<InetSocketAddress> availInetSocketAddressList = RegistryFactory.getInstance()
                                                                             .lookup(transactionServiceGroup);
@@ -239,6 +252,12 @@ class NettyClientChannelManager {
                                          .collect(Collectors.toList());
     }
 
+    /**
+     * 获取存活通道
+     * @param rmChannel
+     * @param serverAddress
+     * @return
+     */
     private Channel getExistAliveChannel(Channel rmChannel, String serverAddress) {
         if (rmChannel.isActive()) {
             return rmChannel;
@@ -257,6 +276,7 @@ class NettyClientChannelManager {
             }
             if (i == NettyClientConfig.getMaxCheckAliveRetry()) {
                 LOGGER.warn("channel {} is not active after long wait, close it.", rmChannel);
+                //重试超次，则释放通道
                 releaseChannel(rmChannel, serverAddress);
                 return null;
             }

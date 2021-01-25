@@ -146,18 +146,32 @@ public class SeataAutoConfiguration {
         PROPERTY_BEAN_MAP.put(REGISTRY_CUSTOM_PREFIX, registryCustomProperties);
     }
 
+    /**
+     * The type spring application context provider
+     * @return
+     */
     @Bean(BEAN_NAME_SPRING_APPLICATION_CONTEXT_PROVIDER)
     @ConditionalOnMissingBean(name = {BEAN_NAME_SPRING_APPLICATION_CONTEXT_PROVIDER})
     public SpringApplicationContextProvider springApplicationContextProvider() {
         return new SpringApplicationContextProvider();
     }
 
+    /**
+     * The type Default failure handler.
+     * @return
+     */
     @Bean(BEAN_NAME_FAILURE_HANDLER)
     @ConditionalOnMissingBean(FailureHandler.class)
     public FailureHandler failureHandler() {
         return new DefaultFailureHandlerImpl();
     }
 
+    /**
+     * 扫描全局事务
+     * @param seataProperties
+     * @param failureHandler
+     * @return
+     */
     @Bean
     @DependsOn({BEAN_NAME_SPRING_APPLICATION_CONTEXT_PROVIDER, BEAN_NAME_FAILURE_HANDLER})
     @ConditionalOnMissingBean(GlobalTransactionScanner.class)
@@ -169,6 +183,10 @@ public class SeataAutoConfiguration {
     }
 
     /**
+     * seata.data-source-proxy-mode=AT
+     * seata.enable-auto-data-source-proxy=true
+     * seata.use-jdk-proxy=false
+     *
      * The data source configuration.
      */
     @Configuration

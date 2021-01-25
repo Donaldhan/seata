@@ -42,21 +42,22 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * process TC response message.
+ * 处理TC响应消息
  * <p>
  * process message type:
  * RM:
  * 1) {@link MergeResultMessage}
- * 2) {@link RegisterRMResponse}
- * 3) {@link BranchRegisterResponse}
+ * 2) {@link RegisterRMResponse} 注册RM响应
+ * 3) {@link BranchRegisterResponse} 分支注册响应
  * 4) {@link BranchReportResponse}
- * 5) {@link GlobalLockQueryResponse}
+ * 5) {@link GlobalLockQueryResponse} 全局锁查询响应
  * TM:
  * 1) {@link MergeResultMessage}
- * 2) {@link RegisterTMResponse}
- * 3) {@link GlobalBeginResponse}
- * 4) {@link GlobalCommitResponse}
+ * 2) {@link RegisterTMResponse} 注册TM响应
+ * 3) {@link GlobalBeginResponse} 全局事务开始相应
+ * 4) {@link GlobalCommitResponse} 全局事务提交
  * 5) {@link GlobalReportResponse}
- * 6) {@link GlobalRollbackResponse}
+ * 6) {@link GlobalRollbackResponse} 全局事务回滚
  *
  * @author zhangchenghui.dev@gmail.com
  * @since 1.3.0

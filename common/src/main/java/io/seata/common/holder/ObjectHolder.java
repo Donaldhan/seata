@@ -21,8 +21,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.seata.common.exception.ShouldNeverHappenException;
 
 /**
- * @author xingfudeshi@gmail.com
  * The enum object holder
+ * @author xingfudeshi@gmail.com
+ *
  */
 public enum ObjectHolder {
     /**

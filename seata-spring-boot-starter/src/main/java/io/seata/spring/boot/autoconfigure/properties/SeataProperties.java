@@ -23,6 +23,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import static io.seata.spring.boot.autoconfigure.StarterConstants.SEATA_PREFIX;
 
 /**
+ * seata 属性
  * @author xingfudeshi@gmail.com
  */
 @ConfigurationProperties(prefix = SEATA_PREFIX)
@@ -45,7 +46,7 @@ public class SeataProperties {
      */
     private boolean enableAutoDataSourceProxy = true;
     /**
-     * data source proxy mode
+     * data source proxy mode， 数据源代理模式AT， TCC ，SAGA
      */
     private String dataSourceProxyMode = DefaultValues.DEFAULT_DATA_SOURCE_PROXY_MODE;
     /**
@@ -54,6 +55,7 @@ public class SeataProperties {
     private boolean useJdkProxy = false;
     /**
      * Specifies which datasource bean are not eligible for auto-proxying
+     * 需要剔除自动代理的数据源
      */
     private String[] excludesForAutoProxying = {};
 

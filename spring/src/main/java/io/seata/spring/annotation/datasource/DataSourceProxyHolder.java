@@ -69,7 +69,7 @@ public class DataSourceProxyHolder {
         if (dataSource instanceof SeataDataSourceProxy) {
             SeataDataSourceProxy dataSourceProxy = (SeataDataSourceProxy) dataSource;
 
-            //If it's an right proxy, return it directly.
+            //If it's an right proxy, return it directly. 数据源代理模式相同的话，则直接返回
             if (dataSourceProxyMode == dataSourceProxy.getBranchType()) {
                 return (SeataDataSourceProxy)dataSource;
             }

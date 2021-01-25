@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import static io.seata.spring.boot.autoconfigure.StarterConstants.COMPRESS_PREFIX;
 
 /**
+ * undo 压缩配置
  * @author chd
  */
 @Component

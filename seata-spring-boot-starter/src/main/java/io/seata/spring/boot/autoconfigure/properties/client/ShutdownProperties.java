@@ -22,13 +22,14 @@ import static io.seata.common.DefaultValues.DEFAULT_SHUTDOWN_TIMEOUT_SEC;
 import static io.seata.spring.boot.autoconfigure.StarterConstants.SHUTDOWN_PREFIX;
 
 /**
+ * 关闭属性配置
  * @author xingfudeshi@gmail.com
  */
 @Component
 @ConfigurationProperties(prefix = SHUTDOWN_PREFIX)
 public class ShutdownProperties {
     /**
-     * when destroy server, wait seconds
+     * when destroy server, wait seconds， 关闭server， 等待时间
      */
     private long wait = DEFAULT_SHUTDOWN_TIMEOUT_SEC;
 
