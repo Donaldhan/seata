@@ -10,7 +10,6 @@ io.seata.spring.annotation.GlobalTransactionScanner#initClient
 io.seata.tm.TMClient#init(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 
 ### ClientOnResponseProcessor  
-
 <!-- TODO -->
 io.seata.core.rpc.processor.client.ClientOnResponseProcessor#process
 
@@ -23,5 +22,55 @@ io.seata.core.rpc.netty.NettyClientBootstrap#start
 
 #### ClientHandler
 io.seata.core.rpc.netty.AbstractNettyRemotingClient.ClientHandler
+
+
+### RMClient
+
+
+io.seata.rm.RMClient#init
+####  RmNettyRemotingClient
+io.seata.core.rpc.netty.RmNettyRemotingClient#init
+
+
+##### DefaultResourceManager
+
+* BranchType.AT， DataSourceManager
+* TCC,TCCResourceManager
+* SAGA,SagaResourceManager
+* XA, ResourceManagerXA
+
+
+#### DataSourceProxy
+io.seata.rm.datasource.DataSourceProxy#init
+
+io.seata.spring.annotation.datasource.DataSourceProxyHolder#putDataSource
+
+io.seata.spring.annotation.datasource.SeataDataSourceBeanPostProcessor#postProcessAfterInitialization
+
+##### DefaultRMHandler
+io.seata.rm.DefaultRMHandler#initRMHandlers
+
+* AT:RMHandlerAT
+* TCC:RMHandlerTCC
+* SAGA:RMHandlerSaga
+* XA:RMHandlerXA
+
+##### RMHandlerAT
+
+提交消息已处理，回滚消息处理
+
+<!-- TODO -->
+
+##### RmBranchCommitProcessor
+
+#### RmBranchRollbackProcessor
+
+#### RmUndoLogProcessor
+
+####  ClientOnResponseProcessor
+
+
+#### 
+#### 
 
 # Server(TC)
