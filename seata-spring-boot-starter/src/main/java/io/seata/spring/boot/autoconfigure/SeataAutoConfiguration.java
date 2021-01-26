@@ -195,6 +195,7 @@ public class SeataAutoConfiguration {
 
         /**
          * The bean seataDataSourceBeanPostProcessor.
+         * DataSource 后处理器
          */
         @Bean(BEAN_NAME_SEATA_DATA_SOURCE_BEAN_POST_PROCESSOR)
         @ConditionalOnMissingBean(SeataDataSourceBeanPostProcessor.class)

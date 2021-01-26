@@ -79,6 +79,7 @@ public class DataSourceProxyHolder {
         } else {
             originalDataSource = dataSource;
         }
+        //创建数据源代理
         return CollectionUtils.computeIfAbsent(this.dataSourceProxyMap, originalDataSource,
                 BranchType.XA == dataSourceProxyMode ? DataSourceProxyXA::new : DataSourceProxy::new);
     }

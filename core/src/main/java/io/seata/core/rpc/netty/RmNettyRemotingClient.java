@@ -181,7 +181,7 @@ public final class RmNettyRemotingClient extends AbstractNettyRemotingClient {
 
     /**
      * Register new db key.
-     *
+     * 注册新的资源
      * @param resourceGroupId the resource group id
      * @param resourceId      the db key
      */
@@ -208,6 +208,12 @@ public final class RmNettyRemotingClient extends AbstractNettyRemotingClient {
         }
     }
 
+    /**
+     * 发送注册RM消息
+     * @param serverAddress
+     * @param channel
+     * @param resourceId
+     */
     public void sendRegisterMessage(String serverAddress, Channel channel, String resourceId) {
         RegisterRMRequest message = new RegisterRMRequest(applicationId, transactionServiceGroup);
         message.setResourceIds(resourceId);
