@@ -212,6 +212,9 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
 
     }
 
+    /**
+     *
+     */
     private void registerSpringShutdownHook() {
         if (applicationContext instanceof ConfigurableApplicationContext) {
             ((ConfigurableApplicationContext) applicationContext).registerShutdownHook();

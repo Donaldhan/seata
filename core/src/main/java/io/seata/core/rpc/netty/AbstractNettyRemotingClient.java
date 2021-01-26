@@ -306,7 +306,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
 
     /**
      * Get pool key function.
-     *
+     * {@link TmNettyRemotingClient#getPoolKeyFunction()}
      * @return lambda function
      */
     protected abstract Function<String, NettyPoolKey> getPoolKeyFunction();

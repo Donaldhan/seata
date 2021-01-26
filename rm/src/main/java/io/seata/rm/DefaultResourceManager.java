@@ -31,17 +31,20 @@ import io.seata.core.model.ResourceManager;
 
 /**
  * default resource manager, adapt all resource managers
- *
+ * 默认RM资源管理器
  * @author zhangsen
  */
 public class DefaultResourceManager implements ResourceManager {
 
     /**
-     * all resource managers
+     * all resource managers 所有资源管理器
      */
     protected static Map<BranchType, ResourceManager> resourceManagers
         = new ConcurrentHashMap<>();
 
+    /**
+     *
+     */
     private DefaultResourceManager() {
         initResourceManagers();
     }
@@ -65,6 +68,17 @@ public class DefaultResourceManager implements ResourceManager {
         resourceManagers.put(branchType, rm);
     }
 
+    /**
+     * 初始化资源管理器
+     * {@link EnhancedServiceLoader.InnerEnhancedServiceLoader#SERVICES_DIRECTORY}
+     * {@link EnhancedServiceLoader.InnerEnhancedServiceLoader#SEATA_DIRECTORY}
+     *
+     * BranchType.AT， DataSourceManager
+     * TCC,TCCResourceManager
+     * SAGA,SagaResourceManager
+     * XA, ResourceManagerXA
+     *
+     */
     protected void initResourceManagers() {
         //init all resource managers
         List<ResourceManager> allResourceManagers = EnhancedServiceLoader.loadAll(ResourceManager.class);

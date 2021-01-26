@@ -48,7 +48,6 @@ import static io.seata.common.Constants.DBKEYS_SPLIT_CHAR;
 
 /**
  * The Rm netty client.
- *
  * @author slievrly
  * @author zhaojun
  * @author zhangchenghui.dev@gmail.com
@@ -267,6 +266,9 @@ public final class RmNettyRemotingClient extends AbstractNettyRemotingClient {
         return transactionServiceGroup;
     }
 
+    /**
+     * 注册处理器
+     */
     private void registerProcessor() {
         // 1.registry rm client handle branch commit processor
         RmBranchCommitProcessor rmBranchCommitProcessor = new RmBranchCommitProcessor(getTransactionMessageHandler(), this);
@@ -277,7 +279,7 @@ public final class RmNettyRemotingClient extends AbstractNettyRemotingClient {
         // 3.registry rm handler undo log processor
         RmUndoLogProcessor rmUndoLogProcessor = new RmUndoLogProcessor(getTransactionMessageHandler());
         super.registerProcessor(MessageType.TYPE_RM_DELETE_UNDOLOG, rmUndoLogProcessor, messageExecutor);
-        // 4.registry TC response processor
+        // 4.registry TC response processor TC 相应处理器
         ClientOnResponseProcessor onResponseProcessor =
             new ClientOnResponseProcessor(mergeMsgMap, super.getFutures(), getTransactionMessageHandler());
         super.registerProcessor(MessageType.TYPE_SEATA_MERGE_RESULT, onResponseProcessor, null);
@@ -285,7 +287,7 @@ public final class RmNettyRemotingClient extends AbstractNettyRemotingClient {
         super.registerProcessor(MessageType.TYPE_BRANCH_STATUS_REPORT_RESULT, onResponseProcessor, null);
         super.registerProcessor(MessageType.TYPE_GLOBAL_LOCK_QUERY_RESULT, onResponseProcessor, null);
         super.registerProcessor(MessageType.TYPE_REG_RM_RESULT, onResponseProcessor, null);
-        // 5.registry heartbeat message processor
+        // 5.registry heartbeat message processor 心跳处理器
         ClientHeartbeatProcessor clientHeartbeatProcessor = new ClientHeartbeatProcessor();
         super.registerProcessor(MessageType.TYPE_HEARTBEAT_MSG, clientHeartbeatProcessor, null);
     }
