@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The type Table meta cache.
- *
+ * 表元信息缓存
  * @author sharajava
  */
 public abstract class AbstractTableMetaCache implements TableMetaCache {
@@ -44,6 +44,9 @@ public abstract class AbstractTableMetaCache implements TableMetaCache {
 
     private static final long EXPIRE_TIME = 900 * 1000;
 
+    /**
+     * 表元信息缓存
+     */
     private static final Cache<String, TableMeta> TABLE_META_CACHE = Caffeine.newBuilder().maximumSize(CACHE_SIZE)
             .expireAfterWrite(EXPIRE_TIME, TimeUnit.MILLISECONDS).softValues().build();
 
@@ -71,6 +74,10 @@ public abstract class AbstractTableMetaCache implements TableMetaCache {
         return tmeta;
     }
 
+    /**
+     * @param connection
+     * @param resourceId
+     */
     @Override
     public void refresh(final Connection connection, String resourceId) {
         ConcurrentMap<String, TableMeta> tableMetaMap = TABLE_META_CACHE.asMap();
@@ -93,7 +100,7 @@ public abstract class AbstractTableMetaCache implements TableMetaCache {
 
     /**
      * generate cache key
-     *
+     * 获取表明缓存key
      * @param connection
      * @param tableName
      * @param resourceId
@@ -103,7 +110,7 @@ public abstract class AbstractTableMetaCache implements TableMetaCache {
 
     /**
      * get scheme from datasource and tableName
-     *
+     * 从数据库抓取表元信息
      * @param connection
      * @param tableName
      * @return

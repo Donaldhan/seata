@@ -18,7 +18,7 @@ package io.seata.core.protocol.transaction;
 
 /**
  * The type Abstract transaction request to rm.
- *
+ * Rm的抽象事务请求
  * @author sharajava
  */
 public abstract class AbstractTransactionRequestToRM extends AbstractTransactionRequest {

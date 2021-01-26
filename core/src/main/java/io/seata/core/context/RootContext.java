@@ -60,6 +60,10 @@ public class RootContext {
 
     private static BranchType DEFAULT_BRANCH_TYPE;
 
+    /**
+     * 默认分支类型只能为AT和XA模式
+     * @param defaultBranchType
+     */
     public static void setDefaultBranchType(BranchType defaultBranchType) {
         if (defaultBranchType != AT && defaultBranchType != XA) {
             throw new IllegalArgumentException("The default branch type must be " + AT + " or " + XA + "." +

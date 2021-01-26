@@ -22,7 +22,7 @@ import io.seata.common.exception.ShouldNeverHappenException;
 
 /**
  * Status of branch transaction.
- *
+ * 分支事务状态
  * @author sharajava
  */
 public enum BranchStatus {

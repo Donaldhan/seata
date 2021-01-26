@@ -49,6 +49,9 @@ public class DataSourceManager extends AbstractResourceManager {
 
     private final AsyncWorker asyncWorker = new AsyncWorker(this);
 
+    /**
+     *  数据源缓存， KEY：resourceId，DataSourceProxy
+     */
     private final Map<String, Resource> dataSourceCache = new ConcurrentHashMap<>();
 
     @Override
@@ -83,6 +86,9 @@ public class DataSourceManager extends AbstractResourceManager {
     public DataSourceManager() {
     }
 
+    /**
+     * @param resource
+     */
     @Override
     public void registerResource(Resource resource) {
         DataSourceProxy dataSourceProxy = (DataSourceProxy) resource;
@@ -105,6 +111,15 @@ public class DataSourceManager extends AbstractResourceManager {
         return (DataSourceProxy) dataSourceCache.get(resourceId);
     }
 
+    /**
+     * @param branchType      the branch type
+     * @param xid             Transaction id.
+     * @param branchId        Branch id.
+     * @param resourceId      Resource id.
+     * @param applicationData Application data bind with this branch.
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public BranchStatus branchCommit(BranchType branchType, String xid, long branchId, String resourceId,
                                      String applicationData) throws TransactionException {

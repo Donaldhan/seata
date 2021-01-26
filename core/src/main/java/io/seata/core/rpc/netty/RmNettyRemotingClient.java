@@ -27,6 +27,9 @@ import io.seata.core.protocol.AbstractMessage;
 import io.seata.core.protocol.MessageType;
 import io.seata.core.protocol.RegisterRMRequest;
 import io.seata.core.protocol.RegisterRMResponse;
+import io.seata.core.protocol.transaction.BranchCommitResponse;
+import io.seata.core.protocol.transaction.BranchRollbackResponse;
+import io.seata.core.protocol.transaction.UndoLogDeleteRequest;
 import io.seata.core.rpc.netty.NettyPoolKey.TransactionRole;
 import io.seata.core.rpc.processor.client.ClientHeartbeatProcessor;
 import io.seata.core.rpc.processor.client.ClientOnResponseProcessor;
@@ -268,6 +271,9 @@ public final class RmNettyRemotingClient extends AbstractNettyRemotingClient {
 
     /**
      * 注册处理器
+     * {@link BranchCommitResponse}
+     * {@link BranchRollbackResponse}
+     * {@link UndoLogDeleteRequest}
      */
     private void registerProcessor() {
         // 1.registry rm client handle branch commit processor

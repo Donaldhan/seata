@@ -27,7 +27,7 @@ public interface TransactionMessageHandler {
 
     /**
      * On a request received.
-     *
+     * 处理接收到的请求
      * @param request received request message
      * @param context context of the RPC
      * @return response to the request
@@ -36,7 +36,7 @@ public interface TransactionMessageHandler {
 
     /**
      * On a response received.
-     *
+     * 处理接收到的响应
      * @param response received response message
      * @param context  context of the RPC
      */

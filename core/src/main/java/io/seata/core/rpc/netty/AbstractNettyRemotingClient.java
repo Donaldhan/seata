@@ -265,6 +265,11 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
         return clientChannelManager;
     }
 
+    /**
+     * @param transactionServiceGroup
+     * @param msg
+     * @return
+     */
     private String loadBalance(String transactionServiceGroup, Object msg) {
         InetSocketAddress address = null;
         try {
@@ -307,6 +312,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
     /**
      * Get pool key function.
      * {@link TmNettyRemotingClient#getPoolKeyFunction()}
+     * {@link RmNettyRemotingClient#getPoolKeyFunction()}
      * @return lambda function
      */
     protected abstract Function<String, NettyPoolKey> getPoolKeyFunction();

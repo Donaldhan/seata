@@ -61,7 +61,7 @@ public interface UndoLogManager {
 
     /**
      * batch Delete undo log.
-     *
+     * 批量删除undo日志
      * @param xids the xid set collections
      * @param branchIds the branch id set collections
      * @param conn the connection

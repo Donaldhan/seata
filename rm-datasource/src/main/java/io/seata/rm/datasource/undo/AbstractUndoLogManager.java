@@ -169,6 +169,12 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
         }
     }
 
+    /**
+     * 批量删除undo 日志 sql
+     * @param xidSize
+     * @param branchIdSize
+     * @return
+     */
     protected static String toBatchDeleteUndoLogSql(int xidSize, int branchIdSize) {
         StringBuilder sqlBuilder = new StringBuilder(64);
         sqlBuilder.append("DELETE FROM ").append(UNDO_LOG_TABLE_NAME).append(" WHERE  ").append(

@@ -21,13 +21,14 @@ import io.seata.core.exception.TransactionException;
  * Resource Manager.
  *
  * Control a branch transaction commit or rollback.
- *
+ * 控制分支事务的提交和回滚
  * @author sharajava
  */
 public interface ResourceManagerInbound {
 
     /**
      * Commit a branch transaction.
+     * 分支提交
      *
      * @param branchType      the branch type
      * @param xid             Transaction id.
@@ -42,7 +43,7 @@ public interface ResourceManagerInbound {
 
     /**
      * Rollback a branch transaction.
-     *
+     * 分支回滚
      * @param branchType      the branch type
      * @param xid             Transaction id.
      * @param branchId        Branch id.

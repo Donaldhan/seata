@@ -47,7 +47,12 @@ public class DefaultRMHandler extends AbstractRMHandler {
     }
 
     /**
+     * 初始化所有RM 处理器
      *
+     * AT:RMHandlerAT
+     * TCC:RMHandlerTCC
+     * SAGA:RMHandlerSaga
+     * XA:RMHandlerXA
      */
     protected void initRMHandlers() {
         List<AbstractRMHandler> allRMHandlers = EnhancedServiceLoader.loadAll(AbstractRMHandler.class);

@@ -56,11 +56,17 @@ public class AsyncWorker {
 
     private static final int UNDOLOG_DELETE_LIMIT_SIZE = 1000;
 
+    /**
+     * 异步提交分支的队列缓存大小
+     */
     private static final int ASYNC_COMMIT_BUFFER_LIMIT = ConfigurationFactory.getInstance().getInt(
         CLIENT_ASYNC_COMMIT_BUFFER_LIMIT, DEFAULT_CLIENT_ASYNC_COMMIT_BUFFER_LIMIT);
 
     private final DataSourceManager dataSourceManager;
 
+    /**
+     * 分支提交队列
+     */
     private final BlockingQueue<Phase2Context> commitQueue;
 
     private final ScheduledExecutorService scheduledExecutor;
@@ -76,6 +82,13 @@ public class AsyncWorker {
         scheduledExecutor.scheduleAtFixedRate(this::doBranchCommitSafely, 10, 1000, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * 处理异步分支提交状态
+     * @param xid
+     * @param branchId
+     * @param resourceId
+     * @return
+     */
     public BranchStatus branchCommit(String xid, long branchId, String resourceId) {
         Phase2Context context = new Phase2Context(xid, branchId, resourceId);
         addToCommitQueue(context);
@@ -85,15 +98,20 @@ public class AsyncWorker {
     /**
      * try add context to commitQueue directly, if fail(which means the queue is full),
      * then doBranchCommit urgently(so that the queue could be empty again) and retry this process.
+     * 直接添加2阶段上下文到提交队列，如果失败，则直接执行排空分支提交队列，再添加到相应的队列
      */
     private void addToCommitQueue(Phase2Context context) {
         if (commitQueue.offer(context)) {
             return;
         }
+        //针对队列已满的情况
         CompletableFuture.runAsync(this::doBranchCommitSafely, scheduledExecutor)
                 .thenRun(() -> addToCommitQueue(context));
     }
 
+    /**
+     * 处理分支提交
+     */
     void doBranchCommitSafely() {
         try {
             doBranchCommit();
@@ -102,6 +120,9 @@ public class AsyncWorker {
         }
     }
 
+    /**
+     *
+     */
     private void doBranchCommit() {
         if (commitQueue.isEmpty()) {
             return;
@@ -117,6 +138,10 @@ public class AsyncWorker {
         groupedContexts.forEach(this::dealWithGroupedContexts);
     }
 
+    /**
+     * @param contexts
+     * @return
+     */
     Map<String, List<Phase2Context>> groupedByResourceId(List<Phase2Context> contexts) {
         Map<String, List<Phase2Context>> groupedContexts = new HashMap<>(DEFAULT_RESOURCE_SIZE);
         contexts.forEach(context -> {
@@ -126,6 +151,11 @@ public class AsyncWorker {
         return groupedContexts;
     }
 
+    /**
+     * 处理两阶段请求
+     * @param resourceId
+     * @param contexts
+     */
     private void dealWithGroupedContexts(String resourceId, List<Phase2Context> contexts) {
         DataSourceProxy dataSourceProxy = dataSourceManager.get(resourceId);
         if (dataSourceProxy == null) {
@@ -144,10 +174,18 @@ public class AsyncWorker {
         UndoLogManager undoLogManager = UndoLogManagerFactory.getUndoLogManager(dataSourceProxy.getDbType());
 
         // split contexts into several lists, with each list contain no more element than limit size
+        //分片处理
         List<List<Phase2Context>> splitByLimit = Lists.partition(contexts, UNDOLOG_DELETE_LIMIT_SIZE);
+        // 删除undo日志
         splitByLimit.forEach(partition -> deleteUndoLog(conn, undoLogManager, partition));
     }
 
+    /**
+     * 删除undo日志
+     * @param conn
+     * @param undoLogManager
+     * @param contexts
+     */
     private void deleteUndoLog(Connection conn, UndoLogManager undoLogManager, List<Phase2Context> contexts) {
         Set<String> xids = new LinkedHashSet<>(contexts.size());
         Set<Long> branchIds = new LinkedHashSet<>(contexts.size());
@@ -177,6 +215,9 @@ public class AsyncWorker {
         }
     }
 
+    /**
+     * 2阶段提交上下文
+     */
     static class Phase2Context {
 
         /**

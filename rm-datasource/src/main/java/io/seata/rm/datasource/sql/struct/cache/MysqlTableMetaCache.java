@@ -43,6 +43,12 @@ public class MysqlTableMetaCache extends AbstractTableMetaCache {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MysqlTableMetaCache.class);
 
+    /**
+     * @param connection
+     * @param tableName
+     * @param resourceId
+     * @return
+     */
     @Override
     protected String getCacheKey(Connection connection, String tableName, String resourceId) {
         StringBuilder cacheKey = new StringBuilder(resourceId);
@@ -74,6 +80,12 @@ public class MysqlTableMetaCache extends AbstractTableMetaCache {
         return cacheKey.toString();
     }
 
+    /**
+     * @param connection
+     * @param tableName
+     * @return
+     * @throws SQLException
+     */
     @Override
     protected TableMeta fetchSchema(Connection connection, String tableName) throws SQLException {
         String sql = "SELECT * FROM " + ColumnUtils.addEscape(tableName, JdbcConstants.MYSQL) + " LIMIT 1";
@@ -87,6 +99,13 @@ public class MysqlTableMetaCache extends AbstractTableMetaCache {
         }
     }
 
+    /**
+     * 获取表元信息
+     * @param rsmd
+     * @param dbmd
+     * @return
+     * @throws SQLException
+     */
     private TableMeta resultSetMetaToSchema(ResultSetMetaData rsmd, DatabaseMetaData dbmd)
         throws SQLException {
         //always "" for mysql

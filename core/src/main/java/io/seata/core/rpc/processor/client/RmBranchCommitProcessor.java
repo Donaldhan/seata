@@ -58,6 +58,12 @@ public class RmBranchCommitProcessor implements RemotingProcessor {
         handleBranchCommit(rpcMessage, remoteAddress, (BranchCommitRequest) msg);
     }
 
+    /**
+     * 处理分支提交
+     * @param request
+     * @param serverAddress
+     * @param branchCommitRequest
+     */
     private void handleBranchCommit(RpcMessage request, String serverAddress, BranchCommitRequest branchCommitRequest) {
         BranchCommitResponse resultMessage;
         resultMessage = (BranchCommitResponse) handler.onRequest(branchCommitRequest, null);
