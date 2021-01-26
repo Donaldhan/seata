@@ -23,6 +23,7 @@ import static io.seata.common.DefaultValues.DEFAULT_TRANSPORT_HEARTBEAT;
 import static io.seata.spring.boot.autoconfigure.StarterConstants.TRANSPORT_PREFIX;
 
 /**
+ * Transport
  * @author xingfudeshi@gmail.com
  */
 @Component

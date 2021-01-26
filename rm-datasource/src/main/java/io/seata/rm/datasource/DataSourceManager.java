@@ -21,7 +21,6 @@ import java.util.concurrent.TimeoutException;
 
 import io.seata.common.exception.NotSupportYetException;
 import io.seata.common.exception.ShouldNeverHappenException;
-import io.seata.common.executor.Initialize;
 import io.seata.core.context.RootContext;
 import io.seata.core.exception.RmTransactionException;
 import io.seata.core.exception.TransactionException;
@@ -30,7 +29,6 @@ import io.seata.core.logger.StackTraceLogger;
 import io.seata.core.model.BranchStatus;
 import io.seata.core.model.BranchType;
 import io.seata.core.model.Resource;
-import io.seata.core.model.ResourceManagerInbound;
 import io.seata.core.protocol.ResultCode;
 import io.seata.core.protocol.transaction.GlobalLockQueryRequest;
 import io.seata.core.protocol.transaction.GlobalLockQueryResponse;
@@ -45,33 +43,25 @@ import org.slf4j.LoggerFactory;
  *
  * @author sharajava
  */
-public class DataSourceManager extends AbstractResourceManager implements Initialize {
+public class DataSourceManager extends AbstractResourceManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceManager.class);
 
-    private ResourceManagerInbound asyncWorker;
-
-    private Map<String, Resource> dataSourceCache = new ConcurrentHashMap<>();
+    private final AsyncWorker asyncWorker = new AsyncWorker(this);
 
     /**
-     * Sets async worker.
-     *
-     * @param asyncWorker the async worker
+     *  数据源缓存， KEY：resourceId，DataSourceProxy
      */
-    public void setAsyncWorker(ResourceManagerInbound asyncWorker) {
-        this.asyncWorker = asyncWorker;
-    }
+    private final Map<String, Resource> dataSourceCache = new ConcurrentHashMap<>();
 
     @Override
-    public boolean lockQuery(BranchType branchType, String resourceId, String xid, String lockKeys)
-        throws TransactionException {
+    public boolean lockQuery(BranchType branchType, String resourceId, String xid, String lockKeys) throws TransactionException {
+        GlobalLockQueryRequest request = new GlobalLockQueryRequest();
+        request.setXid(xid);
+        request.setLockKey(lockKeys);
+        request.setResourceId(resourceId);
         try {
-            GlobalLockQueryRequest request = new GlobalLockQueryRequest();
-            request.setXid(xid);
-            request.setLockKey(lockKeys);
-            request.setResourceId(resourceId);
-
-            GlobalLockQueryResponse response = null;
+            GlobalLockQueryResponse response;
             if (RootContext.inGlobalTransaction() || RootContext.requireGlobalLock()) {
                 response = (GlobalLockQueryResponse) RmNettyRemotingClient.getInstance().sendSyncRequest(request);
             } else {
@@ -88,16 +78,6 @@ public class DataSourceManager extends AbstractResourceManager implements Initia
         } catch (RuntimeException rex) {
             throw new RmTransactionException(TransactionExceptionCode.LockableCheckFailed, "Runtime", rex);
         }
-
-    }
-
-    /**
-     * Init.
-     *
-     * @param asyncWorker the async worker
-     */
-    public synchronized void initAsyncWorker(ResourceManagerInbound asyncWorker) {
-        setAsyncWorker(asyncWorker);
     }
 
     /**
@@ -106,13 +86,9 @@ public class DataSourceManager extends AbstractResourceManager implements Initia
     public DataSourceManager() {
     }
 
-    @Override
-    public void init() {
-        AsyncWorker asyncWorker = new AsyncWorker();
-        asyncWorker.init();
-        initAsyncWorker(asyncWorker);
-    }
-
+    /**
+     * @param resource
+     */
     @Override
     public void registerResource(Resource resource) {
         DataSourceProxy dataSourceProxy = (DataSourceProxy) resource;
@@ -135,10 +111,19 @@ public class DataSourceManager extends AbstractResourceManager implements Initia
         return (DataSourceProxy) dataSourceCache.get(resourceId);
     }
 
+    /**
+     * @param branchType      the branch type
+     * @param xid             Transaction id.
+     * @param branchId        Branch id.
+     * @param resourceId      Resource id.
+     * @param applicationData Application data bind with this branch.
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public BranchStatus branchCommit(BranchType branchType, String xid, long branchId, String resourceId,
                                      String applicationData) throws TransactionException {
-        return asyncWorker.branchCommit(branchType, xid, branchId, resourceId, applicationData);
+        return asyncWorker.branchCommit(xid, branchId, resourceId);
     }
 
     @Override

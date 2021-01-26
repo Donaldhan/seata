@@ -53,7 +53,7 @@ import java.util.Map;
  * <li>Body Length: Full Length - Head Length</li>
  * </p>
  * https://github.com/seata/seata/issues/893
- *
+ * 解码器
  * @author Geng Zhang
  * @see ProtocolV1Encoder
  * @since 0.7.0

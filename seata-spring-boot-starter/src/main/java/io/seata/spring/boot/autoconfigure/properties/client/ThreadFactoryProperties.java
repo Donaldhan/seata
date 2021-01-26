@@ -29,12 +29,19 @@ import static io.seata.common.DefaultValues.DEFAULT_WORKER_THREAD_PREFIX;
 import static io.seata.spring.boot.autoconfigure.StarterConstants.THREAD_FACTORY_PREFIX_KEBAB_STYLE;
 
 /**
+ * 线程工厂配置
  * @author xingfudeshi@gmail.com
  */
 @Component
 @ConfigurationProperties(prefix = THREAD_FACTORY_PREFIX_KEBAB_STYLE)
 public class ThreadFactoryProperties {
+    /**
+     * 连接线程
+     */
     private String bossThreadPrefix = DEFAULT_BOSS_THREAD_PREFIX;
+    /**
+     * 工作线程
+     */
     private String workerThreadPrefix = DEFAULT_NIO_WORKER_THREAD_PREFIX;
     private String serverExecutorThreadPrefix = DEFAULT_EXECUTOR_THREAD_PREFIX;
     private boolean shareBossWorker = false;

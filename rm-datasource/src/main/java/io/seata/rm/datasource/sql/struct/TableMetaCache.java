@@ -19,7 +19,7 @@ import java.sql.Connection;
 
 /**
  * The type Table meta cache.
- *
+ * 表元信息缓存
  * @author sharajava
  */
 public interface TableMetaCache {

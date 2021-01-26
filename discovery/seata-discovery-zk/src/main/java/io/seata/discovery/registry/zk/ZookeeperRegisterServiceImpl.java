@@ -72,6 +72,9 @@ public class ZookeeperRegisterServiceImpl implements RegistryService<IZkChildLis
         + ZK_PATH_SPLIT_CHAR;
     private static final String ROOT_PATH_WITHOUT_SUFFIX = ZK_PATH_SPLIT_CHAR + FILE_ROOT_REGISTRY + ZK_PATH_SPLIT_CHAR
         + REGISTRY_TYPE;
+    /**
+     * 族server地址（TC）
+     */
     private static final ConcurrentMap<String, List<InetSocketAddress>> CLUSTER_ADDRESS_MAP = new ConcurrentHashMap<>();
     private static final ConcurrentMap<String, List<IZkChildListener>> LISTENER_SERVICE_MAP = new ConcurrentHashMap<>();
 
@@ -184,7 +187,13 @@ public class ZookeeperRegisterServiceImpl implements RegistryService<IZkChildLis
         return doLookup(clusterName);
     }
 
-    // visible for test.
+    /**
+     * 查找族的服务地址
+     * visible for test.
+     * @param clusterName
+     * @return
+     * @throws Exception
+     */
     List<InetSocketAddress> doLookup(String clusterName) throws Exception {
         boolean exist = getClientInstance().exists(ROOT_PATH + clusterName);
         if (!exist) {
@@ -260,6 +269,7 @@ public class ZookeeperRegisterServiceImpl implements RegistryService<IZkChildLis
         // recover client
         if (!LISTENER_SERVICE_MAP.isEmpty()) {
             Map<String, List<IZkChildListener>> listenerMap = new HashMap<>(LISTENER_SERVICE_MAP);
+            LISTENER_SERVICE_MAP.clear();
             for (Map.Entry<String, List<IZkChildListener>> listenerEntry : listenerMap.entrySet()) {
                 List<IZkChildListener> iZkChildListeners = listenerEntry.getValue();
                 if (CollectionUtils.isEmpty(iZkChildListeners)) {
@@ -272,6 +282,11 @@ public class ZookeeperRegisterServiceImpl implements RegistryService<IZkChildLis
         }
     }
 
+    /**
+     * 订阅簇的服务地址
+     * @param cluster
+     * @throws Exception
+     */
     private void subscribeCluster(String cluster) throws Exception {
         subscribe(cluster, (parentPath, currentChilds) -> {
             String clusterName = parentPath.replace(ROOT_PATH, "");
@@ -283,6 +298,11 @@ public class ZookeeperRegisterServiceImpl implements RegistryService<IZkChildLis
         });
     }
 
+    /**
+     * 刷新族地址集
+     * @param clusterName
+     * @param instances
+     */
     private void refreshClusterAddressMap(String clusterName, List<String> instances) {
         List<InetSocketAddress> newAddressList = new ArrayList<>();
         if (instances == null) {

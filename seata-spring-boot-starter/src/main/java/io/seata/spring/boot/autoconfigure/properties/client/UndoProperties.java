@@ -25,13 +25,20 @@ import static io.seata.common.DefaultValues.DEFAULT_TRANSACTION_UNDO_LOG_TABLE;
 import static io.seata.spring.boot.autoconfigure.StarterConstants.UNDO_PREFIX;
 
 /**
+ * undo 属性配置
  * @author xingfudeshi@gmail.com
  */
 @Component
 @ConfigurationProperties(prefix = UNDO_PREFIX)
 public class UndoProperties {
     private boolean dataValidation = DEFAULT_TRANSACTION_UNDO_DATA_VALIDATION;
+    /**
+     * log序列化方式
+     */
     private String logSerialization = DEFAULT_TRANSACTION_UNDO_LOG_SERIALIZATION;
+    /**
+     * undo log table
+     */
     private String logTable = DEFAULT_TRANSACTION_UNDO_LOG_TABLE;
     private boolean onlyCareUpdateColumns = DEFAULT_ONLY_CARE_UPDATE_COLUMNS;
 

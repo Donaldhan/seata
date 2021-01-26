@@ -17,6 +17,7 @@ package io.seata.core.rpc.processor;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.seata.core.protocol.RpcMessage;
+import io.seata.core.rpc.netty.AbstractNettyRemoting;
 
 /**
  * The remoting processor
@@ -24,7 +25,8 @@ import io.seata.core.protocol.RpcMessage;
  * Used to encapsulate remote interaction logic.
  * In order to separate the processing business from netty.
  * When netty starts, it will register processors to abstractNettyRemoting#processorTable.
- *
+ * 远程处理器，封装远程的交互逻辑，将业务处理从netty剥离。 netty启动时，将会注册到处理器table中
+ * @see AbstractNettyRemoting#processorTable
  * @author zhangchenghui.dev@gmail.com
  * @since 1.3.0
  */

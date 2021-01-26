@@ -29,19 +29,24 @@ import io.seata.rm.datasource.ColumnUtils;
 
 /**
  * The type Table meta.
- *
+ * 数据表元信息
  * @author sharajava
  */
 public class TableMeta {
+    /**
+     * 表名
+     */
     private String tableName;
 
     /**
      * key: column name
+     * 字段名
      */
 
     private Map<String, ColumnMeta> allColumns = new LinkedHashMap<>();
     /**
      * key: index name
+     * 字段索引
      */
     private Map<String, IndexMeta> allIndexes = new LinkedHashMap<>();
 

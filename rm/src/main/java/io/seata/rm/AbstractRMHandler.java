@@ -44,6 +44,11 @@ public abstract class AbstractRMHandler extends AbstractExceptionHandler
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRMHandler.class);
 
+    /**
+     * 处理分支提交请求
+     * @param request the request
+     * @return
+     */
     @Override
     public BranchCommitResponse handle(BranchCommitRequest request) {
         BranchCommitResponse response = new BranchCommitResponse();
@@ -81,7 +86,7 @@ public abstract class AbstractRMHandler extends AbstractExceptionHandler
 
     /**
      * Do branch commit.
-     *
+     * 实际分支提交请求
      * @param request  the request
      * @param response the response
      * @throws TransactionException the transaction exception

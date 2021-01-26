@@ -22,12 +22,16 @@ import static io.seata.common.DefaultValues.DEFAULT_LOG_EXCEPTION_RATE;
 import static io.seata.spring.boot.autoconfigure.StarterConstants.LOG_PREFIX;
 
 /**
+ * log 属性配置
  * @author jsbxyyx
  */
 @Component
 @ConfigurationProperties(prefix = LOG_PREFIX)
 public class LogProperties {
 
+    /**
+     * 异常log频率
+     */
     private int exceptionRate = DEFAULT_LOG_EXCEPTION_RATE;
 
     public int getExceptionRate() {

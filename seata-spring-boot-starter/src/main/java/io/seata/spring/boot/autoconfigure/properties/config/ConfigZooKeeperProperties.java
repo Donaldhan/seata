@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import static io.seata.spring.boot.autoconfigure.StarterConstants.CONFIG_ZK_PREFIX;
 
 /**
+ * ZooKeeper 配置
  * @author xingfudeshi@gmail.com
  */
 @Component

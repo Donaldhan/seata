@@ -27,14 +27,29 @@ import static io.seata.common.DefaultValues.DEFAULT_TM_ROLLBACK_RETRY_COUNT;
 import static io.seata.spring.boot.autoconfigure.StarterConstants.CLIENT_TM_PREFIX;
 
 /**
+ *
+ * TM 属性配置
  * @author xingfudeshi@gmail.com
+ *
  */
 @Component
 @ConfigurationProperties(prefix = CLIENT_TM_PREFIX)
 public class TmProperties {
+    /**
+     * 重试提交次数
+     */
     private int commitRetryCount = DEFAULT_TM_COMMIT_RETRY_COUNT;
+    /**
+     * 回滚重试次数
+     */
     private int rollbackRetryCount = DEFAULT_TM_ROLLBACK_RETRY_COUNT;
+    /**
+     * 默认全局事务超时时间
+     */
     private int defaultGlobalTransactionTimeout = DEFAULT_GLOBAL_TRANSACTION_TIMEOUT;
+    /**
+     * 降级check
+     */
     private boolean degradeCheck = DEFAULT_TM_DEGRADE_CHECK;
     private int degradeCheckAllowTimes = DEFAULT_TM_DEGRADE_CHECK_ALLOW_TIMES;
     private int degradeCheckPeriod = DEFAULT_TM_DEGRADE_CHECK_PERIOD;

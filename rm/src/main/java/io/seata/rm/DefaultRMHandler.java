@@ -32,17 +32,28 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * the default RM event handler implement, deal with the phase two events
- *
+ * 默认的RM事件处理器，处理两阶段提交
  * @author zhangsen
  */
 public class DefaultRMHandler extends AbstractRMHandler {
 
     protected static Map<BranchType, AbstractRMHandler> allRMHandlersMap = new ConcurrentHashMap<>();
 
+    /**
+     *
+     */
     protected DefaultRMHandler() {
         initRMHandlers();
     }
 
+    /**
+     * 初始化所有RM 处理器
+     *
+     * AT:RMHandlerAT
+     * TCC:RMHandlerTCC
+     * SAGA:RMHandlerSaga
+     * XA:RMHandlerXA
+     */
     protected void initRMHandlers() {
         List<AbstractRMHandler> allRMHandlers = EnhancedServiceLoader.loadAll(AbstractRMHandler.class);
         if (CollectionUtils.isNotEmpty(allRMHandlers)) {

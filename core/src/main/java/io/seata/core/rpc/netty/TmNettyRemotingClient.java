@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.util.concurrent.EventExecutorGroup;
 import io.seata.common.exception.FrameworkException;
 import io.seata.common.loader.EnhancedServiceLoader;
@@ -52,7 +51,7 @@ import static io.seata.core.constants.ConfigurationKeys.SEATA_SECRET_KEY;
  * @author zhaojun
  * @author zhangchenghui.dev@gmail.com
  */
-@Sharable
+
 public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(TmNettyRemotingClient.class);
     private static volatile TmNettyRemotingClient instance;
@@ -113,12 +112,12 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
                 if (instance == null) {
                     NettyClientConfig nettyClientConfig = new NettyClientConfig();
                     final ThreadPoolExecutor messageExecutor = new ThreadPoolExecutor(
-                        nettyClientConfig.getClientWorkerThreads(), nettyClientConfig.getClientWorkerThreads(),
-                        KEEP_ALIVE_TIME, TimeUnit.SECONDS,
-                        new LinkedBlockingQueue<>(MAX_QUEUE_SIZE),
-                        new NamedThreadFactory(nettyClientConfig.getTmDispatchThreadPrefix(),
-                            nettyClientConfig.getClientWorkerThreads()),
-                        RejectedPolicies.runsOldestTaskPolicy());
+                            nettyClientConfig.getClientWorkerThreads(), nettyClientConfig.getClientWorkerThreads(),
+                            KEEP_ALIVE_TIME, TimeUnit.SECONDS,
+                            new LinkedBlockingQueue<>(MAX_QUEUE_SIZE),
+                            new NamedThreadFactory(nettyClientConfig.getTmDispatchThreadPrefix(),
+                                    nettyClientConfig.getClientWorkerThreads()),
+                            RejectedPolicies.runsOldestTaskPolicy());
                     instance = new TmNettyRemotingClient(nettyClientConfig, null, messageExecutor);
                 }
             }
@@ -172,7 +171,7 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
 
     @Override
     public void init() {
-        // registry processor
+        // registry processor， 注册处理器
         registerProcessor();
         if (initialized.compareAndSet(false, true)) {
             super.init();
@@ -187,21 +186,22 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
     @Override
     public void onRegisterMsgSuccess(String serverAddress, Channel channel, Object response,
                                      AbstractMessage requestMessage) {
-        RegisterTMRequest registerTMRequest = (RegisterTMRequest)requestMessage;
-        RegisterTMResponse registerTMResponse = (RegisterTMResponse)response;
+        RegisterTMRequest registerTMRequest = (RegisterTMRequest) requestMessage;
+        RegisterTMResponse registerTMResponse = (RegisterTMResponse) response;
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("register TM success. client version:{}, server version:{},channel:{}", registerTMRequest.getVersion(), registerTMResponse.getVersion(), channel);
         }
+        //注册连接TC通道
         getClientChannelManager().registerChannel(serverAddress, channel);
     }
 
     @Override
     public void onRegisterMsgFail(String serverAddress, Channel channel, Object response,
                                   AbstractMessage requestMessage) {
-        RegisterTMRequest registerTMRequest = (RegisterTMRequest)requestMessage;
-        RegisterTMResponse registerTMResponse = (RegisterTMResponse)response;
+        RegisterTMRequest registerTMRequest = (RegisterTMRequest) requestMessage;
+        RegisterTMResponse registerTMResponse = (RegisterTMResponse) response;
         String errMsg = String.format(
-            "register TM failed. client version: %s,server version: %s, errorMsg: %s, " + "channel: %s", registerTMRequest.getVersion(), registerTMResponse.getVersion(), registerTMResponse.getMsg(), channel);
+                "register TM failed. client version: %s,server version: %s, errorMsg: %s, " + "channel: %s", registerTMRequest.getVersion(), registerTMResponse.getVersion(), registerTMResponse.getMsg(), channel);
         throw new FrameworkException(errMsg);
     }
 
@@ -212,6 +212,10 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
         instance = null;
     }
 
+    /**
+     * 创建TM注册请求PoolKey
+     * @return
+     */
     @Override
     protected Function<String, NettyPoolKey> getPoolKeyFunction() {
         return severAddress -> {
@@ -220,10 +224,13 @@ public final class TmNettyRemotingClient extends AbstractNettyRemotingClient {
         };
     }
 
+    /**
+     * 注册处理器
+     */
     private void registerProcessor() {
-        // 1.registry TC response processor
+        // 1.registry TC response processor， 注册tc响应处理器， 包括全局开始，提交，回滚及状态消息
         ClientOnResponseProcessor onResponseProcessor =
-            new ClientOnResponseProcessor(mergeMsgMap, super.getFutures(), getTransactionMessageHandler());
+                new ClientOnResponseProcessor(mergeMsgMap, super.getFutures(), getTransactionMessageHandler());
         super.registerProcessor(MessageType.TYPE_SEATA_MERGE_RESULT, onResponseProcessor, null);
         super.registerProcessor(MessageType.TYPE_GLOBAL_BEGIN_RESULT, onResponseProcessor, null);
         super.registerProcessor(MessageType.TYPE_GLOBAL_COMMIT_RESULT, onResponseProcessor, null);

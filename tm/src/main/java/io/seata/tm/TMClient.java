@@ -19,7 +19,7 @@ import io.seata.core.rpc.netty.TmNettyRemotingClient;
 
 /**
  * The type Tm client.
- *
+ * TMClient
  * @author slievrly
  */
 public class TMClient {
@@ -36,7 +36,7 @@ public class TMClient {
 
     /**
      * Init.
-     *
+     * 初始化TMClient
      * @param applicationId           the application id
      * @param transactionServiceGroup the transaction service group
      * @param accessKey               the access key

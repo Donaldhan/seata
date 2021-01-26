@@ -21,6 +21,8 @@ import org.springframework.stereotype.Component;
 import static io.seata.spring.boot.autoconfigure.StarterConstants.CONFIG_PREFIX;
 
 /**
+ * 配置类型：
+ * file, nacos, apollo, zk, consul, etcd3, springCloudConfig
  * @author xingfudeshi@gmail.com
  */
 @Component

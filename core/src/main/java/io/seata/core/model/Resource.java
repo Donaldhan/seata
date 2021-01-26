@@ -17,7 +17,7 @@ package io.seata.core.model;
 
 /**
  * Resource that can be managed by Resource Manager and involved into global transaction.
- *
+ * RM
  * @author sharajava
  */
 public interface Resource {

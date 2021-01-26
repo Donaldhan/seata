@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Rpc client.
- *
+ * 基于netty的RPC客户端
  * @author slievrly
  * @author zhaojun
  */
@@ -101,6 +101,9 @@ public class NettyClientBootstrap implements RemotingBootstrap {
         }
     }
 
+    /**
+     * 启动
+     */
     @Override
     public void start() {
         if (this.defaultEventExecutorGroup == null) {
@@ -132,10 +135,13 @@ public class NettyClientBootstrap implements RemotingBootstrap {
                 public void initChannel(SocketChannel ch) {
                     ChannelPipeline pipeline = ch.pipeline();
                     pipeline.addLast(
+                            //空闲处理器
                         new IdleStateHandler(nettyClientConfig.getChannelMaxReadIdleSeconds(),
                             nettyClientConfig.getChannelMaxWriteIdleSeconds(),
                             nettyClientConfig.getChannelMaxAllIdleSeconds()))
+                            //协议解码器
                         .addLast(new ProtocolV1Decoder())
+                            //协议编码器
                         .addLast(new ProtocolV1Encoder());
                     if (channelHandlers != null) {
                         addChannelPipelineLast(ch, channelHandlers);
@@ -162,7 +168,7 @@ public class NettyClientBootstrap implements RemotingBootstrap {
 
     /**
      * Gets new channel.
-     *
+     * 新建通道
      * @param address the address
      * @return the new channel
      */

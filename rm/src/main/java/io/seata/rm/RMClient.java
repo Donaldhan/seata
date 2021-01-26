@@ -26,6 +26,20 @@ public class RMClient {
 
     /**
      * Init.
+     * 初始RM资源管理器， 事务消息处理器，及客户端
+     *
+     * 资源管理：
+     *
+     * * BranchType.AT， DataSourceManager
+     * * TCC,TCCResourceManager
+     * * SAGA,SagaResourceManager
+     * * XA, ResourceManagerXA
+     *
+     * 事务消息处理器
+     * * AT:RMHandlerAT
+     * * TCC:RMHandlerTCC
+     * * SAGA:RMHandlerSaga
+     * * XA:RMHandlerXA
      *
      * @param applicationId           the application id
      * @param transactionServiceGroup the transaction service group

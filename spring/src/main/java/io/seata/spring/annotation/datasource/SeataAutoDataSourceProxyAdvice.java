@@ -29,6 +29,7 @@ import org.springframework.aop.IntroductionInfo;
 import org.springframework.beans.BeanUtils;
 
 /**
+ * seata 自动数据源代理增强
  * @author xingfudeshi@gmail.com
  */
 public class SeataAutoDataSourceProxyAdvice implements MethodInterceptor, IntroductionInfo {

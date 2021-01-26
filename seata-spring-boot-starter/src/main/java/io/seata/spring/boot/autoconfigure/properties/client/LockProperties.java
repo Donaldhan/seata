@@ -24,12 +24,19 @@ import static io.seata.common.DefaultValues.DEFAULT_CLIENT_LOCK_RETRY_TIMES;
 import static io.seata.spring.boot.autoconfigure.StarterConstants.LOCK_PREFIX;
 
 /**
+ * 锁配置
  * @author xingfudeshi@gmail.com
  */
 @Component
 @ConfigurationProperties(prefix = LOCK_PREFIX)
 public class LockProperties {
+    /**
+     * 尝试获取锁间隔
+     */
     private int retryInterval = DEFAULT_CLIENT_LOCK_RETRY_INTERVAL;
+    /**
+     * 尝试获取锁次数
+     */
     private int retryTimes = DEFAULT_CLIENT_LOCK_RETRY_TIMES;
     private boolean retryPolicyBranchRollbackOnConflict = DEFAULT_CLIENT_LOCK_RETRY_POLICY_BRANCH_ROLLBACK_ON_CONFLICT;
 

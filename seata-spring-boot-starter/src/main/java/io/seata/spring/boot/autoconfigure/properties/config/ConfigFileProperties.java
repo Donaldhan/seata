@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import static io.seata.spring.boot.autoconfigure.StarterConstants.CONFIG_FILE_PREFIX;
 
 /**
+ * 文件配置
  * @author xingfudeshi@gmail.com
  */
 @Component

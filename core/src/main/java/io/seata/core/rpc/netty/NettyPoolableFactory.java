@@ -65,8 +65,10 @@ public class NettyPoolableFactory implements KeyedPoolableObjectFactory<NettyPoo
         try {
             response = rpcRemotingClient.sendSyncRequest(tmpChannel, key.getMessage());
             if (!isRegisterSuccess(response, key.getTransactionRole())) {
+
                 rpcRemotingClient.onRegisterMsgFail(key.getAddress(), tmpChannel, response, key.getMessage());
             } else {
+                //注册成功
                 channelToServer = tmpChannel;
                 rpcRemotingClient.onRegisterMsgSuccess(key.getAddress(), tmpChannel, response, key.getMessage());
             }

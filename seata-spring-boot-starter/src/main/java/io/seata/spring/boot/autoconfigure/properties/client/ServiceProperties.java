@@ -29,25 +29,34 @@ import static io.seata.common.DefaultValues.DEFAULT_TX_GROUP;
 import static io.seata.spring.boot.autoconfigure.StarterConstants.SERVICE_PREFIX;
 
 /**
+ * 服务属性配置
+ * seata.service.disable-global-transaction=false
+ * seata.service.enable-degrade=false
+ * seata.service.vgroup-mapping.comosus-boot-tx=tc-cluster
+ * #only support when registry.type=file, please don't set multiple addresses
+ * seata.service.grouplist.tc-cluster=127.0.0.1:8091
+ *
  * @author xingfudeshi@gmail.com
  */
 @Component
 @ConfigurationProperties(prefix = SERVICE_PREFIX)
 public class ServiceProperties implements InitializingBean {
     /**
+     * 虚拟分组与实际分组的映射
      * vgroup->rgroup
      */
     private Map<String, String> vgroupMapping = new HashMap<>();
     /**
+     * 分组列表
      * group list
      */
     private Map<String, String> grouplist = new HashMap<>();
     /**
-     * degrade current not support
+     * degrade current not support 降级开关
      */
     private boolean enableDegrade = false;
     /**
-     * disable globalTransaction
+     * disable globalTransaction 关闭全局事务
      */
     private boolean disableGlobalTransaction = DEFAULT_DISABLE_GLOBAL_TRANSACTION;
 

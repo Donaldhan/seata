@@ -21,6 +21,7 @@ import io.seata.core.model.BranchType;
 
 /**
  * The interface Seata data source.
+ * seata 数据源代理
  *
  * @author wang.liang
  */

@@ -19,7 +19,7 @@ import io.seata.core.protocol.MessageType;
 
 /**
  * The type Branch commit response.
- *
+ * 分支提交消息
  * @author sharajava
  */
 public class BranchCommitResponse extends AbstractBranchEndResponse {

@@ -94,6 +94,11 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
         init(targetDataSource, resourceGroupId);
     }
 
+    /**
+     * 初始化RM dataSource
+     * @param dataSource
+     * @param resourceGroupId
+     */
     private void init(DataSource dataSource, String resourceGroupId) {
         this.resourceGroupId = resourceGroupId;
         try (Connection connection = dataSource.getConnection()) {
@@ -105,6 +110,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
         } catch (SQLException e) {
             throw new IllegalStateException("can not init dataSource", e);
         }
+        //注册数据源到资源管理器
         DefaultResourceManager.get().registerResource(this);
         if (ENABLE_TABLE_META_CHECKER_ENABLE) {
             tableMetaExcutor.scheduleAtFixedRate(() -> {

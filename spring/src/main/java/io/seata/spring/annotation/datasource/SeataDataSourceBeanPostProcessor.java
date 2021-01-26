@@ -37,6 +37,9 @@ public class SeataDataSourceBeanPostProcessor implements BeanPostProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(SeataDataSourceBeanPostProcessor.class);
 
     private final List<String> excludes;
+    /**
+     * 数据源代理模式
+     */
     private final BranchType dataSourceProxyMode;
 
     public SeataDataSourceBeanPostProcessor(String[] excludes, String dataSourceProxyMode) {
@@ -54,7 +57,7 @@ public class SeataDataSourceBeanPostProcessor implements BeanPostProcessor {
         if (bean instanceof DataSource) {
             //When not in the excludes, put and init proxy.
             if (!excludes.contains(bean.getClass().getName())) {
-                //Only put and init proxy, not return proxy.
+                //Only put and init proxy, not return proxy. 注册数据源
                 DataSourceProxyHolder.get().putDataSource((DataSource) bean, dataSourceProxyMode);
             }
 

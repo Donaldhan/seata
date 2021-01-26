@@ -23,6 +23,7 @@ import static io.seata.common.DefaultValues.VIRTUAL_NODES_DEFAULT;
 import static io.seata.spring.boot.autoconfigure.StarterConstants.REGISTRY_PREFIX;
 
 /**
+ * 注册器属性
  * @author xingfudeshi@gmail.com
  */
 @Component
@@ -33,11 +34,11 @@ public class RegistryProperties {
      */
     private String type = "file";
     /**
-     * the load balance
+     * the load balance， 负载均衡策略
      */
     private String loadBalance = DEFAULT_LOAD_BALANCE;
     /**
-     * the load balance virtual nodes
+     * the load balance virtual nodes， 负载均衡的虚拟节点
      */
     private int loadBalanceVirtualNodes = VIRTUAL_NODES_DEFAULT;
 

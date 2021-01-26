@@ -26,7 +26,7 @@ public interface ResourceManager extends ResourceManagerInbound, ResourceManager
 
     /**
      * Register a Resource to be managed by Resource Manager.
-     *
+     * 注册资源
      * @param resource The resource to be managed.
      */
     void registerResource(Resource resource);

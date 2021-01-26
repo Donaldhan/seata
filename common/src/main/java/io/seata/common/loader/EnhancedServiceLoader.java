@@ -187,19 +187,41 @@ public class EnhancedServiceLoader {
     }
 
 
+    /**
+     * 内部增强服务加载器
+     * @param <S>
+     */
     private static class InnerEnhancedServiceLoader<S> {
         private static final Logger LOGGER = LoggerFactory.getLogger(InnerEnhancedServiceLoader.class);
+        /**
+         * 服务类路径
+         */
         private static final String SERVICES_DIRECTORY = "META-INF/services/";
+        /**
+         * seata服务目录
+         */
         private static final String SEATA_DIRECTORY = "META-INF/seata/";
 
         private static final ConcurrentMap<Class<?>, InnerEnhancedServiceLoader<?>> SERVICE_LOADERS =
                 new ConcurrentHashMap<>();
 
+        /**
+         * 需要加载的服务类型
+         */
         private final Class<S> type;
         private final Holder<List<ExtensionDefinition>> definitionsHolder = new Holder<>();
+        /**
+         * 扩展服务类，单例服务
+         */
         private final ConcurrentMap<ExtensionDefinition, Holder<Object>> definitionToInstanceMap =
                 new ConcurrentHashMap<>();
+        /**
+         * 拓展服务命名类集
+         */
         private final ConcurrentMap<String, List<ExtensionDefinition>> nameToDefinitionsMap = new ConcurrentHashMap<>();
+        /**
+         * 拓展服务类集
+         */
         private final ConcurrentMap<Class<?>, ExtensionDefinition> classToDefinitionMap = new ConcurrentHashMap<>();
 
         private InnerEnhancedServiceLoader(Class<S> type) {
@@ -283,6 +305,7 @@ public class EnhancedServiceLoader {
 
         /**
          * get all implements
+         *
          * @param loader  the class loader
          *
          * @return list list
@@ -326,6 +349,13 @@ public class EnhancedServiceLoader {
             return loadAllExtensionClass(loader);
         }
 
+        /**
+         * 加载给定的服务类
+         * @param loader
+         * @param argTypes
+         * @param args
+         * @return
+         */
         @SuppressWarnings("rawtypes")
         private S loadExtension(ClassLoader loader, Class[] argTypes,
                                 Object[] args) {
@@ -365,12 +395,21 @@ public class EnhancedServiceLoader {
             }
         }
 
+        /**
+         * 获取扩展服务类实例
+         * @param definition
+         * @param loader
+         * @param argTypes
+         * @param args
+         * @return
+         */
         private S getExtensionInstance(ExtensionDefinition definition, ClassLoader loader, Class[] argTypes,
                                        Object[] args) {
             if (definition == null) {
                 throw new EnhancedServiceNotFoundException("not found service provider for : " + type.getName());
             }
             if (Scope.SINGLETON.equals(definition.getScope())) {
+                //单例模式
                 Holder<Object> holder = CollectionUtils.computeIfAbsent(definitionToInstanceMap, definition,
                     key -> new Holder<>());
                 Object instance = holder.get();
@@ -385,10 +424,18 @@ public class EnhancedServiceLoader {
                 }
                 return (S)instance;
             } else {
+                //原型模式
                 return createNewExtension(definition, loader, argTypes, args);
             }
         }
 
+        /**
+         * @param definition
+         * @param loader
+         * @param argTypes
+         * @param args
+         * @return
+         */
         private S createNewExtension(ExtensionDefinition definition, ClassLoader loader, Class[] argTypes, Object[] args) {
             Class<?> clazz = definition.getServiceClass();
             try {
@@ -400,6 +447,10 @@ public class EnhancedServiceLoader {
             }
         }
 
+        /**
+         * @param loader
+         * @return
+         */
         private List<Class> loadAllExtensionClass(ClassLoader loader) {
             List<ExtensionDefinition> definitions = definitionsHolder.get();
             if (definitions == null) {
@@ -414,6 +465,11 @@ public class EnhancedServiceLoader {
             return definitions.stream().map(def -> def.getServiceClass()).collect(Collectors.toList());
         }
 
+        /**
+         * 加载给定服务，并根据排序
+         * @param loader
+         * @return
+         */
         @SuppressWarnings("rawtypes")
         private List<ExtensionDefinition> findAllExtensionDefinition(ClassLoader loader) {
             List<ExtensionDefinition> extensionDefinitions = new ArrayList<>();
@@ -447,6 +503,13 @@ public class EnhancedServiceLoader {
         }
 
 
+        /**
+         * 从给定的文件配置加载服务SPI
+         * @param dir
+         * @param loader
+         * @param extensions
+         * @throws IOException
+         */
         @SuppressWarnings("rawtypes")
         private void loadFile(String dir, ClassLoader loader, List<ExtensionDefinition> extensions)
                 throws IOException {
@@ -490,6 +553,13 @@ public class EnhancedServiceLoader {
             }
         }
 
+        /**
+         * 加载跟定的class，
+         * @param className
+         * @param loader
+         * @return
+         * @throws ClassNotFoundException
+         */
         private ExtensionDefinition getUnloadedExtensionDefinition(String className, ClassLoader loader)
             throws ClassNotFoundException {
             //Check whether the definition has been loaded
@@ -507,6 +577,7 @@ public class EnhancedServiceLoader {
                 ExtensionDefinition result = new ExtensionDefinition(serviceName, priority, scope, clazz);
                 classToDefinitionMap.put(clazz, result);
                 if (serviceName != null) {
+                    //加载命定定义类型
                     CollectionUtils.computeIfAbsent(nameToDefinitionsMap, serviceName, e -> new ArrayList<>())
                             .add(result);
                 }
@@ -515,6 +586,11 @@ public class EnhancedServiceLoader {
             return null;
         }
 
+        /**
+         * @param className
+         * @param loader
+         * @return
+         */
         private boolean isDefinitionContainsClazz(String className, ClassLoader loader) {
             for (Map.Entry<Class<?>, ExtensionDefinition> entry : classToDefinitionMap.entrySet()) {
                 if (!entry.getKey().getName().equals(className)) {
