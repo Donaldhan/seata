@@ -155,6 +155,11 @@ public abstract class AbstractRMHandler extends AbstractExceptionHandler
         return transactionRequest.handle(context);
     }
 
+    /**
+     * just log
+     * @param response received response message
+     * @param context  context of the RPC
+     */
     @Override
     public void onResponse(AbstractResultMessage response, RpcContext context) {
         LOGGER.info("the rm client received response msg [{}] from tc server.", response.toString());

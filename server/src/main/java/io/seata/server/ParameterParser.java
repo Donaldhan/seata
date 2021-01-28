@@ -60,6 +60,9 @@ public class ParameterParser {
         this.init(args);
     }
 
+    /**
+     * @param args
+     */
     private void init(String[] args) {
         try {
             if (ContainerHelper.isRunningInContainer()) {

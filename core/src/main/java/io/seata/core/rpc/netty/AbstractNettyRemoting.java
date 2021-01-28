@@ -77,7 +77,7 @@ public abstract class AbstractNettyRemoting implements Disposable {
 
     /**
      * Obtain the return result through MessageFuture blocking.
-     *
+     * 通过MessageFuture阻塞操作获取结果
      * @see AbstractNettyRemoting#sendSync
      */
     protected final ConcurrentHashMap<Integer, MessageFuture> futures = new ConcurrentHashMap<>();
@@ -279,6 +279,7 @@ public abstract class AbstractNettyRemoting implements Disposable {
                     try {
                         pair.getSecond().execute(() -> {
                             try {
+                                //处理器处理消息
                                 pair.getFirst().process(ctx, rpcMessage);
                             } catch (Throwable th) {
                                 LOGGER.error(FrameworkErrorCode.NetDispatch.getErrCode(), th.getMessage(), th);

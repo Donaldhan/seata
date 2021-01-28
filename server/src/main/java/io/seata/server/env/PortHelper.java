@@ -24,6 +24,10 @@ import static io.seata.common.DefaultValues.SERVER_DEFAULT_PORT;
  */
 public class PortHelper {
 
+    /**
+     * @param args
+     * @return
+     */
     public static int getPort(String[] args) {
         if (ContainerHelper.isRunningInContainer()) {
             return ContainerHelper.getPort();

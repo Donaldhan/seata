@@ -51,6 +51,9 @@ public class RmUndoLogProcessor implements RemotingProcessor {
         handleUndoLogDelete((UndoLogDeleteRequest) msg);
     }
 
+    /**
+     * @param undoLogDeleteRequest
+     */
     private void handleUndoLogDelete(UndoLogDeleteRequest undoLogDeleteRequest) {
         try {
             handler.onRequest(undoLogDeleteRequest, null);

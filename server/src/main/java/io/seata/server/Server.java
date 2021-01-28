@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The type Server.
- *
+ * TC Sever
  * @author slievrly
  */
 public class Server {
@@ -51,7 +51,7 @@ public class Server {
 
     /**
      * The entry point of application.
-     *
+     *  seata-server.bat -p 8091 -h 127.0.0.1 -m db
      * @param args the input arguments
      * @throws IOException the io exception
      */
@@ -73,7 +73,7 @@ public class Server {
 
         //initialize the metrics
         MetricsManager.get().init();
-
+        // 存储mode
         System.setProperty(ConfigurationKeys.STORE_MODE, parameterParser.getStoreMode());
 
         NettyRemotingServer nettyRemotingServer = new NettyRemotingServer(WORKING_THREADS);

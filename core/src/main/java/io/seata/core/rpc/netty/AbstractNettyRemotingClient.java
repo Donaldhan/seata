@@ -90,6 +90,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
 
     /**
      * When sending message type is {@link MergeMessage}, will be stored to mergeMsgMap.
+     * 发送合并消息时，则存储到合并消息Map
      */
     protected final Map<Integer, MergeMessage> mergeMsgMap = new ConcurrentHashMap<>();
 
@@ -97,6 +98,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
      * When batch sending is enabled, the message will be stored to basketMap
      * Send via asynchronous thread {@link MergedSendRunnable}
      * {@link NettyClientConfig#isEnableClientBatchSendRequest}
+     *  当批量发送下次开启时，消息将会存储在basketMap中， 将会通过合并发送线程异步处理
      */
     protected final ConcurrentHashMap<String/*serverAddress*/, BlockingQueue<RpcMessage>> basketMap = new ConcurrentHashMap<>();
 
@@ -121,6 +123,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
                 KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(),
                 new NamedThreadFactory(getThreadPrefix(), MAX_MERGE_SEND_THREAD));
+            //合并发送线程
             mergeSendExecutorService.submit(new MergedSendRunnable());
         }
         super.init();
@@ -159,6 +162,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
             MessageFuture messageFuture = new MessageFuture();
             messageFuture.setRequestMessage(rpcMessage);
             messageFuture.setTimeout(timeoutMillis);
+            //存放到异步消息队列
             futures.put(rpcMessage.getId(), messageFuture);
 
             // put message into basketMap
@@ -221,6 +225,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
             ? ProtocolConstants.MSGTYPE_HEARTBEAT_REQUEST
             : ProtocolConstants.MSGTYPE_RESQUEST_ONEWAY);
         if (rpcMessage.getBody() instanceof MergeMessage) {
+            //合并请求
             mergeMsgMap.put(rpcMessage.getId(), (MergeMessage) rpcMessage.getBody());
         }
         super.sendAsync(channel, rpcMessage);
@@ -326,6 +331,7 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
 
     /**
      * The type Merged send runnable.
+     * 合并发送线程
      */
     private class MergedSendRunnable implements Runnable {
 
@@ -378,6 +384,9 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
             }
         }
 
+        /**
+         * @param mergeMessage
+         */
         private void printMergeMessageLog(MergedWarpMessage mergeMessage) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("merge msg size:{}", mergeMessage.msgIds.size());
@@ -399,10 +408,17 @@ public abstract class AbstractNettyRemotingClient extends AbstractNettyRemoting 
 
     /**
      * The type ClientHandler.
+     * 客户端处理器
      */
     @Sharable
     class ClientHandler extends ChannelDuplexHandler {
 
+        /**
+         * 接收消息
+         * @param ctx
+         * @param msg
+         * @throws Exception
+         */
         @Override
         public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
             if (!(msg instanceof RpcMessage)) {

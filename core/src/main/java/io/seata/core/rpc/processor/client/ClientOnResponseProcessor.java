@@ -54,8 +54,8 @@ import java.util.concurrent.ConcurrentMap;
  * TM:
  * 1) {@link MergeResultMessage}
  * 2) {@link RegisterTMResponse} 注册TM响应
- * 3) {@link GlobalBeginResponse} 全局事务开始相应
- * 4) {@link GlobalCommitResponse} 全局事务提交
+ * 3) {@link GlobalBeginResponse} 全局事务开始响应
+ * 4) {@link GlobalCommitResponse} 全局事务提交响应
  * 5) {@link GlobalReportResponse}
  * 6) {@link GlobalRollbackResponse} 全局事务回滚
  *
@@ -67,12 +67,14 @@ public class ClientOnResponseProcessor implements RemotingProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientOnResponseProcessor.class);
 
     /**
-     * The Merge msg map from io.seata.core.rpc.netty.AbstractNettyRemotingClient#mergeMsgMap.
+     * The Merge msg map from
+     * @see io.seata.core.rpc.netty.AbstractNettyRemotingClient#mergeMsgMap
      */
     private Map<Integer, MergeMessage> mergeMsgMap;
 
     /**
-     * The Futures from io.seata.core.rpc.netty.AbstractNettyRemoting#futures
+     * The Futures from
+     * @see io.seata.core.rpc.netty.AbstractNettyRemoting#futures
      */
     private ConcurrentMap<Integer, MessageFuture> futures;
 
@@ -89,9 +91,17 @@ public class ClientOnResponseProcessor implements RemotingProcessor {
         this.transactionMessageHandler = transactionMessageHandler;
     }
 
+    /**
+     * 如果为RmNettyRemotingClient， transactionMessageHandler>DefaultRMHandler
+     * 非异步操作，委托给事务处理器
+     * @param ctx        Channel handler context.
+     * @param rpcMessage rpc message.
+     * @throws Exception
+     */
     @Override
     public void process(ChannelHandlerContext ctx, RpcMessage rpcMessage) throws Exception {
         if (rpcMessage.getBody() instanceof MergeResultMessage) {
+            //合并结果
             MergeResultMessage results = (MergeResultMessage) rpcMessage.getBody();
             MergedWarpMessage mergeMessage = (MergedWarpMessage) mergeMsgMap.remove(rpcMessage.getId());
             for (int i = 0; i < mergeMessage.msgs.size(); i++) {
@@ -102,16 +112,19 @@ public class ClientOnResponseProcessor implements RemotingProcessor {
                         LOGGER.info("msg: {} is not found in futures.", msgId);
                     }
                 } else {
+                    //设置MessageFuture的相应结果
                     future.setResultMessage(results.getMsgs()[i]);
                 }
             }
         } else {
             MessageFuture messageFuture = futures.remove(rpcMessage.getId());
             if (messageFuture != null) {
+                //设置MessageFuture的相应结果
                 messageFuture.setResultMessage(rpcMessage.getBody());
             } else {
                 if (rpcMessage.getBody() instanceof AbstractResultMessage) {
                     if (transactionMessageHandler != null) {
+                        //委托给事务处理器
                         transactionMessageHandler.onResponse((AbstractResultMessage) rpcMessage.getBody(), null);
                     }
                 }
