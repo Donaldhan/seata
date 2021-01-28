@@ -48,6 +48,7 @@ public class DataCompareUtils {
 
     /**
      * Is field equals.
+     * 比较字段是否相同， name， type， 如果需要比较value
      *
      * @param f0 the f0
      * @param f1 the f1
@@ -87,6 +88,10 @@ public class DataCompareUtils {
         }
     }
 
+    /**
+     * @param f0
+     * @param f1
+     */
     private static void convertType(Field f0, Field f1) {
         int f0Type = f0.getType();
         int f1Type = f1.getType();
@@ -153,6 +158,13 @@ public class DataCompareUtils {
         return compareRows(tableMetaData, oldRows, newRows);
     }
 
+    /**
+     * 比较行记录
+     * @param tableMetaData
+     * @param oldRows
+     * @param newRows
+     * @return
+     */
     private static Result<Boolean> compareRows(TableMeta tableMetaData, List<Row> oldRows, List<Row> newRows) {
         // old row to map
         Map<String, Map<String, Field>> oldRowsMap = rowListToMap(oldRows, tableMetaData.getPrimaryKeyOnlyName());
@@ -182,6 +194,12 @@ public class DataCompareUtils {
         return Result.ok();
     }
 
+    /**
+     * {value of primaryKey, value of all columns}
+     * @param rowList
+     * @param primaryKeyList
+     * @return
+     */
     public static Map<String, Map<String, Field>> rowListToMap(List<Row> rowList, List<String> primaryKeyList) {
         // {value of primaryKey, value of all columns}
         Map<String, Map<String, Field>> rowMap = new HashMap<>();
