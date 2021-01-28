@@ -33,6 +33,7 @@ import io.seata.sqlparser.util.JdbcConstants;
 
 /**
  * The type My sql undo insert executor.
+ * 插入Undo操作
  *
  * @author sharajava
  */
@@ -45,7 +46,7 @@ public class MySQLUndoInsertExecutor extends AbstractUndoExecutor {
 
     /**
      * Undo Inset.
-     *
+     * Undo insert操作
      * @return sql
      */
     @Override
@@ -58,6 +59,13 @@ public class MySQLUndoInsertExecutor extends AbstractUndoExecutor {
         return generateDeleteSql(afterImageRows,afterImage);
     }
 
+    /**
+     * 删除对应的记录即可， 注意自增id，占位不会消息，比如当前插入记录为7， 删除后，下一个插入的记录id为8；
+     * @param undoPST     the undo pst
+     * @param undoValues  the undo values
+     * @param pkValueList the pk value
+     * @throws SQLException
+     */
     @Override
     protected void undoPrepare(PreparedStatement undoPST, ArrayList<Field> undoValues, List<Field> pkValueList)
             throws SQLException {
@@ -68,6 +76,11 @@ public class MySQLUndoInsertExecutor extends AbstractUndoExecutor {
         }
     }
 
+    /**
+     * @param rows
+     * @param afterImage
+     * @return
+     */
     private String generateDeleteSql(List<Row> rows, TableRecords afterImage) {
         List<String> pkNameList = getOrderedPkList(afterImage, rows.get(0), JdbcConstants.MYSQL).stream().map(
             e -> e.getName()).collect(Collectors.toList());

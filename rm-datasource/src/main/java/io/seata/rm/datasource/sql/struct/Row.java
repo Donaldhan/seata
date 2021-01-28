@@ -21,7 +21,7 @@ import java.util.List;
 
 /**
  * The type Row.
- *
+ * 数据库行记录
  * @author sharajava
  */
 public class Row implements java.io.Serializable {

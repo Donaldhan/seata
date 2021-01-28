@@ -16,9 +16,12 @@
 package io.seata.rm.datasource.undo;
 
 import io.seata.common.exception.ShouldNeverHappenException;
+import io.seata.rm.datasource.undo.mysql.MySQLUndoExecutorHolder;
 
 /**
  * The type Undo executor factory.
+ * undo 操作工厂， 包括INSERT, UPDATE,DELETE
+ * @see MySQLUndoExecutorHolder
  *
  * @author sharajava
  */

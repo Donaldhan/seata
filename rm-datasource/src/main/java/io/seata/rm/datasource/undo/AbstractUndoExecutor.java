@@ -114,6 +114,7 @@ public abstract class AbstractUndoExecutor {
      */
     public void executeOn(Connection conn) throws SQLException {
         if (IS_UNDO_DATA_VALIDATION_ENABLE && !dataValidationAndGoOn(conn)) {
+            //不需要进行undo操作
             return;
         }
         try {
@@ -128,7 +129,7 @@ public abstract class AbstractUndoExecutor {
                         undoValues.add(field);
                     }
                 }
-
+                //执行Undo预操作，参数设置
                 undoPrepare(undoPST, undoValues, pkValueList);
 
                 undoPST.executeUpdate();
@@ -146,7 +147,7 @@ public abstract class AbstractUndoExecutor {
 
     /**
      * Undo prepare.
-     *
+     * 执行Undo预操作，参数设置
      * @param undoPST     the undo pst
      * @param undoValues  the undo values
      * @param pkValueList the pk value
@@ -215,7 +216,10 @@ public abstract class AbstractUndoExecutor {
 
     /**
      * Data validation.
-     *
+     * 行记录数据校验， 判断是否需要继续undo操作；情况如下：
+     * 1. 如果前后的镜像快照一样，则不需要做任何undo操作
+     * 2. 当前镜像快照和before镜像，相等，则不需要做任何操作
+     * 3. 当前镜像快照和after镜像一致，则需要进undo操作
      * @param conn the conn
      * @return return true if data validation is ok and need continue undo, and return false if no need continue undo.
      * @throws SQLException the sql exception such as has dirty data
@@ -229,11 +233,13 @@ public abstract class AbstractUndoExecutor {
         // No need undo if the before data snapshot is equivalent to the after data snapshot.
         Result<Boolean> beforeEqualsAfterResult = DataCompareUtils.isRecordsEquals(beforeRecords, afterRecords);
         if (beforeEqualsAfterResult.getResult()) {
+
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("Stop rollback because there is no data change " +
                         "between the before data snapshot and the after data snapshot.");
             }
             // no need continue undo.
+            //如果前后的镜像快照一样，则不需要做任何undo操作
             return false;
         }
 
@@ -242,8 +248,7 @@ public abstract class AbstractUndoExecutor {
         // compare with current data and after image.
         Result<Boolean> afterEqualsCurrentResult = DataCompareUtils.isRecordsEquals(afterRecords, currentRecords);
         if (!afterEqualsCurrentResult.getResult()) {
-
-            // If current data is not equivalent to the after data, then compare the current data with the before 
+            // If current data is not equivalent to the after data, then compare the current data with the before
             // data, too. No need continue to undo if current data is equivalent to the before data snapshot
             Result<Boolean> beforeEqualsCurrentResult = DataCompareUtils.isRecordsEquals(beforeRecords, currentRecords);
             if (beforeEqualsCurrentResult.getResult()) {
@@ -252,6 +257,7 @@ public abstract class AbstractUndoExecutor {
                             "between the before data snapshot and the current data snapshot.");
                 }
                 // no need continue undo.
+                //比较当前镜像快照和before镜像，相等，则不需要做任何操作
                 return false;
             } else {
                 if (LOGGER.isInfoEnabled()) {
