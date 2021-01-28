@@ -47,6 +47,10 @@ public class GzipUtil {
         }
     }
 
+    /**
+     * @param bytes
+     * @return
+     */
     public static byte[] decompress(byte[] bytes) {
         if (bytes == null) {
             throw new NullPointerException("bytes is null");

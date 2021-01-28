@@ -86,7 +86,7 @@ public abstract class AbstractRMHandler extends AbstractExceptionHandler
 
     /**
      * Do branch commit.
-     * 实际分支提交请求
+     * 实际分支提交请求 , 即删除相应的undo_log
      * @param request  the request
      * @param response the response
      * @throws TransactionException the transaction exception
@@ -113,7 +113,7 @@ public abstract class AbstractRMHandler extends AbstractExceptionHandler
 
     /**
      * Do branch rollback.
-     *
+     * 处理分支回滚
      * @param request  the request
      * @param response the response
      * @throws TransactionException the transaction exception

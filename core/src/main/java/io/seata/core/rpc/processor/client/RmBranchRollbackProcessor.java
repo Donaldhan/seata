@@ -58,6 +58,12 @@ public class RmBranchRollbackProcessor implements RemotingProcessor {
         handleBranchRollback(rpcMessage, remoteAddress, (BranchRollbackRequest) msg);
     }
 
+    /**
+     * 处理事务分支回滚请求
+     * @param request
+     * @param serverAddress
+     * @param branchRollbackRequest
+     */
     private void handleBranchRollback(RpcMessage request, String serverAddress, BranchRollbackRequest branchRollbackRequest) {
         BranchRollbackResponse resultMessage;
         resultMessage = (BranchRollbackResponse) handler.onRequest(branchRollbackRequest, null);

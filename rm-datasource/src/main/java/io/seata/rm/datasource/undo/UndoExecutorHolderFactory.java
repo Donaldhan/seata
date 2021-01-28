@@ -23,7 +23,7 @@ import io.seata.common.util.CollectionUtils;
 
 /**
  * The Type UndoExecutorHolderFactory
- *
+ * undo 执行器工厂
  * @author: Zhibei Hao
  */
 public class UndoExecutorHolderFactory {

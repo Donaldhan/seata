@@ -41,6 +41,10 @@ import io.seata.rm.datasource.ConnectionProxy;
 import io.seata.rm.datasource.DataSourceProxy;
 import io.seata.rm.datasource.sql.struct.TableMeta;
 import io.seata.rm.datasource.sql.struct.TableMetaCacheFactory;
+import io.seata.rm.datasource.undo.mysql.MySQLUndoDeleteExecutor;
+import io.seata.rm.datasource.undo.mysql.MySQLUndoExecutorHolder;
+import io.seata.rm.datasource.undo.mysql.MySQLUndoInsertExecutor;
+import io.seata.rm.datasource.undo.mysql.MySQLUndoUpdateExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,14 +61,19 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractUndoLogManager.class);
 
+    /**
+     *
+     */
     protected enum State {
         /**
          * This state can be properly rolled back by services
+         *  服务可以回滚
          */
         Normal(0),
         /**
          * This state prevents the branch transaction from inserting undo_log after the global transaction is rolled
          * back.
+         * 全局事务回滚完成，阻止分支事务插入undo_log
          */
         GlobalFinished(1);
 
@@ -82,10 +91,16 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
     protected static final String UNDO_LOG_TABLE_NAME = ConfigurationFactory.getInstance().getConfig(
         ConfigurationKeys.TRANSACTION_UNDO_LOG_TABLE, DEFAULT_TRANSACTION_UNDO_LOG_TABLE);
 
+    /**
+     *  选择UNDO LOG SQL
+     */
     protected static final String SELECT_UNDO_LOG_SQL = "SELECT * FROM " + UNDO_LOG_TABLE_NAME + " WHERE "
         + ClientTableColumnsName.UNDO_LOG_BRANCH_XID + " = ? AND " + ClientTableColumnsName.UNDO_LOG_XID
         + " = ? FOR UPDATE";
 
+    /**
+     * 删除UNDO LOG SQL
+     */
     protected static final String DELETE_UNDO_LOG_SQL = "DELETE FROM " + UNDO_LOG_TABLE_NAME + " WHERE "
         + ClientTableColumnsName.UNDO_LOG_BRANCH_XID + " = ? AND " + ClientTableColumnsName.UNDO_LOG_XID + " = ?";
 
@@ -98,6 +113,9 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
     protected static final long ROLLBACK_INFO_COMPRESS_THRESHOLD = SizeUtil.size2Long(ConfigurationFactory.getInstance().getConfig(
             ConfigurationKeys.CLIENT_UNDO_COMPRESS_THRESHOLD, DEFAULT_CLIENT_UNDO_COMPRESS_THRESHOLD));
 
+    /**
+     * 序列化方式
+     */
     private static final ThreadLocal<String> SERIALIZER_LOCAL = new ThreadLocal<>();
 
     public static String getCurrentSerializer() {
@@ -114,7 +132,7 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
 
     /**
      * Delete undo log.
-     *
+     * 删除undo log
      * @param xid      the xid
      * @param branchId the branch id
      * @param conn     the conn
@@ -136,7 +154,7 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
 
     /**
      * batch Delete undo log.
-     *
+     * 批量删除undo log
      * @param xids
      * @param branchIds
      * @param conn
@@ -196,10 +214,19 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
         sqlBuilder.append(") ");
     }
 
+    /**
+     * @param state
+     * @return
+     */
     protected static boolean canUndo(int state) {
         return state == State.Normal.getValue();
     }
 
+    /**
+     * @param serializer
+     * @param compressorType
+     * @return
+     */
     protected String buildContext(String serializer, CompressorType compressorType) {
         Map<String, String> map = new HashMap<>();
         map.put(UndoLogConstants.SERIALIZER_KEY, serializer);
@@ -250,6 +277,13 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
 
     /**
      * Undo.
+     * 处理undo回滚日志
+     *
+     * {@link MySQLUndoExecutorHolder}
+     *
+     * {@link MySQLUndoInsertExecutor}
+     * {@link MySQLUndoUpdateExecutor}
+     * {@link MySQLUndoDeleteExecutor}
      *
      * @param dataSourceProxy the data source proxy
      * @param xid             the xid
@@ -285,6 +319,7 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
                     // It is possible that the server repeatedly sends a rollback request to roll back
                     // the same branch transaction to multiple processes,
                     // ensuring that only the undo_log in the normal state is processed.
+                    //回滚幂等
                     int state = rs.getInt(ClientTableColumnsName.UNDO_LOG_LOG_STATUS);
                     if (!canUndo(state)) {
                         if (LOGGER.isInfoEnabled()) {
@@ -307,6 +342,7 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
                         setCurrentSerializer(parser.getName());
                         List<SQLUndoLog> sqlUndoLogs = branchUndoLog.getSqlUndoLogs();
                         if (sqlUndoLogs.size() > 1) {
+                            //反排序undo log
                             Collections.reverse(sqlUndoLogs);
                         }
                         for (SQLUndoLog sqlUndoLog : sqlUndoLogs) {
@@ -315,6 +351,7 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
                             sqlUndoLog.setTableMeta(tableMeta);
                             AbstractUndoExecutor undoExecutor = UndoExecutorFactory.getUndoExecutor(
                                 dataSourceProxy.getDbType(), sqlUndoLog);
+                            //执行undo
                             undoExecutor.executeOn(conn);
                         }
                     } finally {
@@ -331,8 +368,11 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
                 // To ensure data consistency, we can insert an undo_log with GlobalFinished state
                 // to prevent the local transaction of the first phase of other programs from being correctly submitted.
                 // See https://github.com/seata/seata/issues/489
-
+                //如果事务日志存在，则意味着完成了一阶段提交，我们只需要直接回滚，并清除undo log即可。
+                //否则预示着分支事务异常发生：比如业务处理超时，全局事务回滚。为确保数据的一致性，我们可以插入一个全局事务完成的undo log， 以防止
+                //将要正常执行的提交的一阶段本地事务
                 if (exists) {
+                    //删除undo log， 日志直接回滚
                     deleteUndoLog(xid, branchId, conn);
                     conn.commit();
                     if (LOGGER.isInfoEnabled()) {
@@ -340,6 +380,7 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
                             State.GlobalFinished.name());
                     }
                 } else {
+                    //全局事务回滚完成，插入undo log，防止其程序的一阶段的正常事务提交
                     insertUndoLogWithGlobalFinished(xid, branchId, UndoLogParserFactory.getInstance(), conn);
                     conn.commit();
                     if (LOGGER.isInfoEnabled()) {
@@ -414,7 +455,7 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
 
     /**
      * RollbackInfo to bytes
-     *
+     * 转换回滚信息为字节，如果需要，则解压
      * @param rs
      * @return
      * @throws SQLException

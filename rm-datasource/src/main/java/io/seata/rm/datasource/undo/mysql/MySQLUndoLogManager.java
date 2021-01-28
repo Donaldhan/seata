@@ -80,6 +80,16 @@ public class MySQLUndoLogManager extends AbstractUndoLogManager {
         insertUndoLog(xid, branchId, buildContext(parser.getName(), CompressorType.NONE), parser.getDefaultContent(), State.GlobalFinished, conn);
     }
 
+    /**
+     * 插入undo log
+     * @param xid
+     * @param branchId
+     * @param rollbackCtx
+     * @param undoLogContent
+     * @param state
+     * @param conn
+     * @throws SQLException
+     */
     private void insertUndoLog(String xid, long branchId, String rollbackCtx, byte[] undoLogContent,
                                State state, Connection conn) throws SQLException {
         try (PreparedStatement pst = conn.prepareStatement(INSERT_UNDO_LOG_SQL)) {
