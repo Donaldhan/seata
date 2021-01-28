@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 /**
  * The type My sql undo delete executor.
- *
+ * mysql delete undo 操作， 插入相应的删除记录
  * @author sharajava
  */
 public class MySQLUndoDeleteExecutor extends AbstractUndoExecutor {
@@ -80,6 +80,10 @@ public class MySQLUndoDeleteExecutor extends AbstractUndoExecutor {
         return String.format(INSERT_SQL_TEMPLATE, sqlUndoLog.getTableName(), insertColumns, insertValues);
     }
 
+    /**
+     * 回复之前的快照
+     * @return
+     */
     @Override
     protected TableRecords getUndoRows() {
         return sqlUndoLog.getBeforeImage();

@@ -97,6 +97,10 @@ public class MySQLUndoInsertExecutor extends AbstractUndoExecutor {
         super(sqlUndoLog);
     }
 
+    /**
+     * 删除执行后的快照镜像
+     * @return
+     */
     @Override
     protected TableRecords getUndoRows() {
         return sqlUndoLog.getAfterImage();

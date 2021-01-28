@@ -326,6 +326,12 @@ public abstract class AbstractUndoExecutor {
         return currentRecords;
     }
 
+    /**
+     * @param image
+     * @param row
+     * @param dbType
+     * @return
+     */
     protected List<Field> getOrderedPkList(TableRecords image, Row row, String dbType) {
         List<Field> pkFields = new ArrayList<>();
         // To ensure the order of the pk, the order should based on getPrimaryKeyOnlyName.

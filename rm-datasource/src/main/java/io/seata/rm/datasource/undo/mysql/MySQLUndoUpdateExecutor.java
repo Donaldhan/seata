@@ -31,7 +31,7 @@ import io.seata.sqlparser.util.JdbcConstants;
 
 /**
  * The type My sql undo update executor.
- *
+ * Mysql undo 更新执行器
  * @author sharajava
  */
 public class MySQLUndoUpdateExecutor extends AbstractUndoExecutor {
@@ -61,7 +61,6 @@ public class MySQLUndoUpdateExecutor extends AbstractUndoExecutor {
         String updateColumns = nonPkFields.stream().map(
             field -> ColumnUtils.addEscape(field.getName(), JdbcConstants.MYSQL) + " = ?").collect(
             Collectors.joining(", "));
-
         List<String> pkNameList = getOrderedPkList(beforeImage, row, JdbcConstants.MYSQL).stream().map(e -> e.getName())
             .collect(Collectors.toList());
         String whereSql = SqlGenerateUtils.buildWhereConditionByPKs(pkNameList, JdbcConstants.MYSQL);
@@ -78,6 +77,10 @@ public class MySQLUndoUpdateExecutor extends AbstractUndoExecutor {
         super(sqlUndoLog);
     }
 
+    /**
+     * rollback成之前的快照
+     * @return
+     */
     @Override
     protected TableRecords getUndoRows() {
         return sqlUndoLog.getBeforeImage();
