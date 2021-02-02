@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Default event bus implement with Guava EventBus.
- *
+ * Guava EventBus 源码解析:https://zhuanlan.zhihu.com/p/336469154
  * @author zhengyangyong
  */
 public class GuavaEventBus implements EventBus {

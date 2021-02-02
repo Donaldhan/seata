@@ -28,7 +28,7 @@ public interface Core extends TransactionCoordinatorInbound, TransactionCoordina
 
     /**
      * Do global commit.
-     *
+     * 提交全局事务
      * @param globalSession the global session
      * @param retrying      the retrying
      * @return is global commit.
@@ -38,7 +38,7 @@ public interface Core extends TransactionCoordinatorInbound, TransactionCoordina
 
     /**
      * Do global rollback.
-     *
+     * 回滚全局事务
      * @param globalSession the global session
      * @param retrying      the retrying
      * @return is global rollback.

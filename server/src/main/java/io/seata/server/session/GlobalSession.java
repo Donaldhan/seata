@@ -35,6 +35,7 @@ import io.seata.core.model.BranchType;
 import io.seata.core.model.GlobalStatus;
 import io.seata.server.UUIDGenerator;
 import io.seata.server.lock.LockerManagerFactory;
+import io.seata.server.storage.db.store.DataBaseTransactionStoreManager;
 import io.seata.server.store.SessionStorable;
 import io.seata.server.store.StoreConfig;
 import org.slf4j.Logger;
@@ -209,6 +210,10 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
         return active;
     }
 
+    /**
+     * disable 全局会话状态
+     * @throws TransactionException
+     */
     @Override
     public void close() throws TransactionException {
         if (active) {
@@ -218,6 +223,10 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
         }
     }
 
+    /**
+     * 释放全局事务相关的锁，并从会话管理器中移除全局会话
+     * @throws TransactionException
+     */
     @Override
     public void end() throws TransactionException {
         // Clean locks first
@@ -229,6 +238,10 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
 
     }
 
+    /**
+     * 释放全局事务的分支行锁
+     * @throws TransactionException
+     */
     public void clean() throws TransactionException {
         LockerManagerFactory.getLockManager().releaseGlobalSessionLock(this);
 
@@ -236,7 +249,7 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
 
     /**
      * Close and clean.
-     *
+     * disable 全局会话状态， 释放全局事务的分支行锁
      * @throws TransactionException the transaction exception
      */
     public void closeAndClean() throws TransactionException {
@@ -272,6 +285,12 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
         add(branchSession);
     }
 
+    /**
+     * 释放锁，从事务管理器中移除事务分支，并从全局事务会话中移除分支会话
+     * {@link DataBaseTransactionStoreManager#writeSession(io.seata.server.store.TransactionStoreManager.LogOperation, io.seata.server.store.SessionStorable)}
+     * @param branchSession the branch session
+     * @throws TransactionException
+     */
     @Override
     public void removeBranch(BranchSession branchSession) throws TransactionException {
         if (!branchSession.unlock()) {
@@ -622,7 +641,7 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
 
     /**
      * Has branch boolean.
-     *
+     * 是否还有分支会话
      * @return the boolean
      */
     public boolean hasBranch() {
@@ -685,6 +704,10 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
         this.changeStatus(GlobalStatus.AsyncCommitting);
     }
 
+    /**
+     * 添加全局会话到重试提交管理器，并更新全局事务状态为{@link GlobalStatus#CommitRetrying}
+     * @throws TransactionException
+     */
     public void queueToRetryCommit() throws TransactionException {
         this.addSessionLifecycleListener(SessionHolder.getRetryCommittingSessionManager());
         SessionHolder.getRetryCommittingSessionManager().addGlobalSession(this);

@@ -81,7 +81,7 @@ public class SessionHelper {
 
     /**
      * End committed.
-     *
+     * 更新全局事务状态为已提交{@link GlobalStatus#Committed}，释放全局事务相关的锁，并从会话管理器中移除全局会话
      * @param globalSession the global session
      * @throws TransactionException the transaction exception
      */

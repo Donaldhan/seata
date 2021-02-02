@@ -21,9 +21,21 @@ package io.seata.core.event;
  * @author zhengyangyong
  */
 public interface EventBus {
+    /**
+     * 注册事件监听器
+     * @param subscriber
+     */
     void register(Object subscriber);
 
+    /**
+     * 注销事件监听器
+     * @param subscriber
+     */
     void unregister(Object subscriber);
 
+    /**
+     * post事件
+     * @param event
+     */
     void post(Event event);
 }

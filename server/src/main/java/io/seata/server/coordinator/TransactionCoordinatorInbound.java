@@ -20,7 +20,7 @@ import io.seata.core.model.TransactionManager;
 
 /**
  * receive inbound request from RM or TM.
- *
+ * 从RM和TM的inbound请求
  * @author zhangchenghui.dev@gmail.com
  * @since 1.1.0
  */

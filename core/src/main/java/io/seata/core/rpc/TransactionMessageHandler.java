@@ -20,7 +20,7 @@ import io.seata.core.protocol.AbstractResultMessage;
 
 /**
  * To handle the received RPC message on upper level.
- *
+ * 事务消息处理器
  * @author slievrly
  */
 public interface TransactionMessageHandler {

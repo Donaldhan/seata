@@ -146,6 +146,13 @@ public abstract class AbstractCore implements Core {
         return true;
     }
 
+    /**
+     * 发送分支事务提交消息
+     * @param globalSession the global session
+     * @param branchSession the branch session
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public BranchStatus branchCommit(GlobalSession globalSession, BranchSession branchSession) throws TransactionException {
         try {
@@ -163,6 +170,15 @@ public abstract class AbstractCore implements Core {
         }
     }
 
+    /**
+     * 发送分支事务提交消息
+     * @param request
+     * @param globalSession
+     * @param branchSession
+     * @return
+     * @throws IOException
+     * @throws TimeoutException
+     */
     protected BranchStatus branchCommitSend(BranchCommitRequest request, GlobalSession globalSession,
                                             BranchSession branchSession) throws IOException, TimeoutException {
         BranchCommitResponse response = (BranchCommitResponse) remotingServer.sendSyncRequest(

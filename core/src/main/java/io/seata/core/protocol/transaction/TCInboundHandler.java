@@ -27,7 +27,7 @@ public interface TCInboundHandler {
 
     /**
      * Handle global begin response.
-     *
+     * 处理全局事务开始
      * @param globalBegin the global begin
      * @param rpcContext  the rpc context
      * @return the global begin response
@@ -36,7 +36,7 @@ public interface TCInboundHandler {
 
     /**
      * Handle global commit response.
-     *
+     * 处理全局事务提交
      * @param globalCommit the global commit
      * @param rpcContext   the rpc context
      * @return the global commit response
@@ -45,7 +45,7 @@ public interface TCInboundHandler {
 
     /**
      * Handle global rollback response.
-     *
+     * 处理全局事务回滚
      * @param globalRollback the global rollback
      * @param rpcContext     the rpc context
      * @return the global rollback response
@@ -54,7 +54,7 @@ public interface TCInboundHandler {
 
     /**
      * Handle branch register response.
-     *
+     *  全局事务注册
      * @param branchRegister the branch register
      * @param rpcContext     the rpc context
      * @return the branch register response
@@ -63,7 +63,7 @@ public interface TCInboundHandler {
 
     /**
      * Handle branch report response.
-     *
+     * 分支report
      * @param branchReport the branch report
      * @param rpcContext   the rpc context
      * @return the branch report response
@@ -72,7 +72,7 @@ public interface TCInboundHandler {
 
     /**
      * Handle global lock query response.
-     *
+     * 全局事务锁查询
      * @param checkLock  the check lock
      * @param rpcContext the rpc context
      * @return the global lock query response
@@ -81,7 +81,7 @@ public interface TCInboundHandler {
 
     /**
      * Handle global status response.
-     *
+     * 全局事务状态
      * @param globalStatus the global status
      * @param rpcContext   the rpc context
      * @return the global status response
@@ -90,7 +90,7 @@ public interface TCInboundHandler {
 
     /**
      * Handle global report request.
-     *
+     * 全局事务report
      * @param globalReport the global report request
      * @param rpcContext   the rpc context
      * @return the global report response

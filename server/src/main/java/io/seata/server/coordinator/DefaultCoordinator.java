@@ -67,6 +67,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * The type Default coordinator.
+ * 全局事务协调器
  */
 public class DefaultCoordinator extends AbstractTCInboundHandler implements TransactionMessageHandler, Disposable {
 
@@ -136,6 +137,9 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
 
     private RemotingServer remotingServer;
 
+    /**
+     *
+     */
     private DefaultCore core;
 
     private EventBus eventBus = EventBusManager.get();

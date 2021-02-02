@@ -19,6 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.seata.server.storage.db.session.DataBaseSessionManager;
+import io.seata.server.storage.db.store.DataBaseTransactionStoreManager;
+import io.seata.server.transaction.at.ATCore;
+import io.seata.server.transaction.saga.SagaCore;
+import io.seata.server.transaction.tcc.TccCore;
+import io.seata.server.transaction.xa.XACore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +47,7 @@ import io.seata.server.session.SessionHolder;
 
 /**
  * The type Default core.
- *
+ * core事务处理
  * @author sharajava
  */
 public class DefaultCore implements Core {
@@ -50,11 +56,17 @@ public class DefaultCore implements Core {
 
     private EventBus eventBus = EventBusManager.get();
 
+    /**
+     *
+     */
     private static Map<BranchType, AbstractCore> coreMap = new ConcurrentHashMap<>();
 
     /**
      * get the Default core.
-     *
+     * {@link ATCore}
+     * {@link XACore}
+     * {@link TccCore}
+     * {@link SagaCore}
      * @param remotingServer the remoting server
      */
     public DefaultCore(RemotingServer remotingServer) {
@@ -120,6 +132,16 @@ public class DefaultCore implements Core {
         return getCore(branchSession.getBranchType()).branchRollback(globalSession, branchSession);
     }
 
+    /**
+     * 触发全局事务开始事件， 全局会话监听器DataBaseSessionManager处理相应事件
+     * {@link DataBaseSessionManager#addGlobalSession(io.seata.server.session.GlobalSession)}
+     * @param applicationId           ID of the application who begins this transaction.
+     * @param transactionServiceGroup ID of the transaction service group.
+     * @param name                    Give a name to the global transaction.
+     * @param timeout                 Timeout of the global transaction.
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public String begin(String applicationId, String transactionServiceGroup, String name, int timeout)
         throws TransactionException {
@@ -136,6 +158,14 @@ public class DefaultCore implements Core {
         return session.getXid();
     }
 
+    /**
+     * 触发全局事务提交事件， 全局会话监听器DataBaseSessionManager处理相应事件
+     * {@link DataBaseTransactionStoreManager#writeSession(io.seata.server.store.TransactionStoreManager.LogOperation, io.seata.server.store.SessionStorable)}
+     * 委托{@link GlobalSession#changeStatus(GlobalStatus)}
+     * @param xid XID of the global transaction.
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public GlobalStatus commit(String xid) throws TransactionException {
         GlobalSession globalSession = SessionHolder.findGlobalSession(xid);
@@ -147,12 +177,14 @@ public class DefaultCore implements Core {
 
         boolean shouldCommit = SessionHolder.lockAndExecute(globalSession, () -> {
             // Highlight: Firstly, close the session, then no more branch can be registered.
+            //disable 全局会话状态， 释放全局事务的分支相关行锁, 不在接收分支注册
             globalSession.closeAndClean();
             if (globalSession.getStatus() == GlobalStatus.Begin) {
                 if (globalSession.canBeCommittedAsync()) {
                     globalSession.asyncCommit();
                     return false;
                 } else {
+                    //分支可以提交
                     globalSession.changeStatus(GlobalStatus.Committing);
                     return true;
                 }
@@ -161,8 +193,10 @@ public class DefaultCore implements Core {
         });
 
         if (shouldCommit) {
+            //如果可以提交，则尝试全局提交
             boolean success = doGlobalCommit(globalSession, false);
             //If successful and all remaining branches can be committed asynchronously, do async commit.
+            //如果全局提交成功，且海鸥需要异步提交的分支，做异步提交
             if (success && globalSession.hasBranch() && globalSession.canBeCommittedAsync()) {
                 globalSession.asyncCommit();
                 return GlobalStatus.Committed;
@@ -174,10 +208,22 @@ public class DefaultCore implements Core {
         }
     }
 
+    /**
+     *
+     * 尝试提交全局事务，首先针对各分支事务，尝试提交，
+     * 如果分支两阶段提交成功，移除相关分时会话（释放锁，从事务管理器中移除事务分支，并从全局事务会话中移除分支会话）；
+     * 待完成检查分支的提交状态后，检查全局会话是否还有未提交的分支，如果全局可以异步提交，则全局事务提交成功，否则提交失败；
+     * 全局事务提交成功则结束全局事务(更新全局事务状态为已提交{@link GlobalStatus#Committed}，释放全局事务相关的锁，并从会话管理器中移除全局会话)
+     *
+     * @param globalSession the global session
+     * @param retrying      the retrying
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public boolean doGlobalCommit(GlobalSession globalSession, boolean retrying) throws TransactionException {
         boolean success = true;
-        // start committing event
+        // start committing event 开启提交事务
         eventBus.post(new GlobalTransactionEvent(globalSession.getTransactionId(), GlobalTransactionEvent.ROLE_TC,
             globalSession.getTransactionName(), globalSession.getBeginTime(), null, globalSession.getStatus()));
 
@@ -186,23 +232,28 @@ public class DefaultCore implements Core {
         } else {
             for (BranchSession branchSession : globalSession.getSortedBranches()) {
                 // if not retrying, skip the canBeCommittedAsync branches
+                // 如果不需要重试，则跳过可以异步提交分分支
                 if (!retrying && branchSession.canBeCommittedAsync()) {
                     continue;
                 }
 
                 BranchStatus currentStatus = branchSession.getStatus();
                 if (currentStatus == BranchStatus.PhaseOne_Failed) {
+                    //移除一阶段失败的分支会话
                     globalSession.removeBranch(branchSession);
                     continue;
                 }
                 try {
+                    //发送分支事务提交消息
                     BranchStatus branchStatus = getCore(branchSession.getBranchType()).branchCommit(globalSession, branchSession);
 
                     switch (branchStatus) {
                         case PhaseTwo_Committed:
+                            //两阶段提交完成移除分支
                             globalSession.removeBranch(branchSession);
                             continue;
                         case PhaseTwo_CommitFailed_Unretryable:
+                            //两阶段提交失败，不可以重试
                             if (globalSession.canBeCommittedAsync()) {
                                 LOGGER.error(
                                     "Committing branch transaction[{}], status: PhaseTwo_CommitFailed_Unretryable, please check the business log.", branchSession.getBranchId());
@@ -214,6 +265,7 @@ public class DefaultCore implements Core {
                             }
                         default:
                             if (!retrying) {
+                                // 添加全局会话到重试提交管理器，并更新全局事务状态为{@link GlobalStatus#CommitRetrying}
                                 globalSession.queueToRetryCommit();
                                 return false;
                             }
@@ -238,13 +290,16 @@ public class DefaultCore implements Core {
             }
             //If has branch and not all remaining branches can be committed asynchronously,
             //do print log and return false
+            // 如果还有未提交的分支，并且这些分支不可以异步提交, 则提交失败
             if (globalSession.hasBranch() && !globalSession.canBeCommittedAsync()) {
                 LOGGER.info("Committing global transaction is NOT done, xid = {}.", globalSession.getXid());
                 return false;
             }
         }
         //If success and there is no branch, end the global transaction.
+        //结束全局事务
         if (success && globalSession.getBranchSessions().isEmpty()) {
+            //更新全局事务状态为已提交{@link GlobalStatus#Committed}，释放全局事务相关的锁，并从会话管理器中移除全局会话
             SessionHelper.endCommitted(globalSession);
 
             // committed event
