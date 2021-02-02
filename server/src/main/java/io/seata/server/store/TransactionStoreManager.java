@@ -70,15 +70,18 @@ public interface TransactionStoreManager {
 
     /**
      * The enum Log operation.
+     * 全局事务，分支的ADR
      */
     enum LogOperation {
 
         /**
          * Global add log operation.
+         * 添加全局事务
          */
         GLOBAL_ADD((byte)1),
         /**
          * Global update log operation.
+         * 更新
          */
         GLOBAL_UPDATE((byte)2),
         /**

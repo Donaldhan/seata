@@ -28,14 +28,14 @@ public interface SessionLifecycle {
 
     /**
      * Begin.
-     *
+     * 开始事务
      * @throws TransactionException the transaction exception
      */
     void begin() throws TransactionException;
 
     /**
      * Change status.
-     *
+     * 改变事务状态
      * @param status the status
      * @throws TransactionException the transaction exception
      */
@@ -43,7 +43,7 @@ public interface SessionLifecycle {
 
     /**
      * Change branch status.
-     *
+     * 改变分支状态
      * @param branchSession the branch session
      * @param status        the status
      * @throws TransactionException the transaction exception
@@ -52,7 +52,7 @@ public interface SessionLifecycle {
 
     /**
      * Add branch.
-     *
+     * 添加分支
      * @param branchSession the branch session
      * @throws TransactionException the transaction exception
      */
@@ -60,7 +60,7 @@ public interface SessionLifecycle {
 
     /**
      * Remove branch.
-     *
+     * 移除分支
      * @param branchSession the branch session
      * @throws TransactionException the transaction exception
      */
@@ -68,21 +68,21 @@ public interface SessionLifecycle {
 
     /**
      * Is active boolean.
-     *
+     * 是否处于激活状态
      * @return the boolean
      */
     boolean isActive();
 
     /**
      * Close.
-     *
+     * 关闭
      * @throws TransactionException the transaction exception
      */
     void close() throws TransactionException;
 
     /**
      * End.
-     *
+     * 全局事务结束
      * @throws TransactionException the transaction exception
      */
     void end() throws TransactionException;

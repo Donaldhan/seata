@@ -32,6 +32,12 @@ import io.seata.core.constants.ConfigurationKeys;
 import io.seata.core.exception.TransactionException;
 import io.seata.core.model.GlobalStatus;
 import io.seata.core.store.StoreMode;
+import io.seata.server.storage.db.lock.DataBaseLockManager;
+import io.seata.server.storage.db.session.DataBaseSessionManager;
+import io.seata.server.storage.file.lock.FileLockManager;
+import io.seata.server.storage.file.session.FileSessionManager;
+import io.seata.server.storage.redis.lock.RedisLockManager;
+import io.seata.server.storage.redis.session.RedisSessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,19 +76,41 @@ public class SessionHolder {
      */
     public static final String DEFAULT_SESSION_STORE_FILE_DIR = "sessionStore";
 
+    /**
+     * Root 会话管理器
+     */
     private static SessionManager ROOT_SESSION_MANAGER;
+    /**
+     *
+     */
     private static SessionManager ASYNC_COMMITTING_SESSION_MANAGER;
+    /**
+     *
+     */
     private static SessionManager RETRY_COMMITTING_SESSION_MANAGER;
+    /**
+     *
+     */
     private static SessionManager RETRY_ROLLBACKING_SESSION_MANAGER;
 
     /**
      * Init.
+     * 会话管理器
+     * @see DataBaseSessionManager
+     * @see FileSessionManager
+     * @see RedisSessionManager
+     *
+     * 锁
+     * @see DataBaseLockManager
+     * @see FileLockManager
+     * @see RedisLockManager
      *
      * @param mode the store mode: file, db
      * @throws IOException the io exception
      */
     public static void init(String mode) {
         if (StringUtils.isBlank(mode)) {
+            //存储模式
             mode = CONFIG.getConfig(ConfigurationKeys.STORE_MODE);
         }
         StoreMode storeMode = StoreMode.get(mode);
@@ -95,6 +123,7 @@ public class SessionHolder {
             RETRY_ROLLBACKING_SESSION_MANAGER = EnhancedServiceLoader.load(SessionManager.class, StoreMode.DB.getName(),
                 new Object[] {RETRY_ROLLBACKING_SESSION_MANAGER_NAME});
         } else if (StoreMode.FILE.equals(storeMode)) {
+            //文件会话管理器
             String sessionStorePath = CONFIG.getConfig(ConfigurationKeys.STORE_FILE_DIR,
                 DEFAULT_SESSION_STORE_FILE_DIR);
             if (StringUtils.isBlank(sessionStorePath)) {
@@ -108,7 +137,9 @@ public class SessionHolder {
                 new Class[] {String.class, String.class}, new Object[] {RETRY_COMMITTING_SESSION_MANAGER_NAME, null});
             RETRY_ROLLBACKING_SESSION_MANAGER = EnhancedServiceLoader.load(SessionManager.class, StoreMode.FILE.getName(),
                 new Class[] {String.class, String.class}, new Object[] {RETRY_ROLLBACKING_SESSION_MANAGER_NAME, null});
+
         } else if (StoreMode.REDIS.equals(storeMode)) {
+            //Redis 会话管理器
             ROOT_SESSION_MANAGER = EnhancedServiceLoader.load(SessionManager.class, StoreMode.REDIS.getName());
             ASYNC_COMMITTING_SESSION_MANAGER = EnhancedServiceLoader.load(SessionManager.class,
                 StoreMode.REDIS.getName(), new Object[] {ASYNC_COMMITTING_SESSION_MANAGER_NAME});
@@ -120,13 +151,14 @@ public class SessionHolder {
             // unknown store
             throw new IllegalArgumentException("unknown store mode:" + mode);
         }
+        //根据存储模式，重新加载会话
         reload(storeMode);
     }
 
-    //region reload
-
     /**
+     * region reload
      * Reload.
+     * 根据存储模式，重新加载会话
      */
     protected static void reload(StoreMode storeMode) {
         if (ROOT_SESSION_MANAGER instanceof Reloadable) {
@@ -149,6 +181,7 @@ public class SessionHolder {
                     case TimeoutRollbacked:
                     case TimeoutRollbackFailed:
                     case Finished:
+                        //最终状态的，直接移除会话
                         removeGlobalSessions.add(globalSession);
                         break;
                     case AsyncCommitting:
@@ -158,6 +191,7 @@ public class SessionHolder {
                         break;
                     default: {
                         if (storeMode == StoreMode.FILE) {
+                            //锁分支会话
                             lockBranchSessions(globalSession.getSortedBranches());
 
                             switch (globalStatus) {
@@ -172,6 +206,7 @@ public class SessionHolder {
                                     queueToRetryRollback(globalSession);
                                     break;
                                 case Begin:
+                                    //开启全局事务会话
                                     globalSession.setActive(true);
                                     break;
                                 default:
@@ -200,6 +235,9 @@ public class SessionHolder {
         }
     }
 
+    /**
+     * @param globalSession
+     */
     private static void queueToAsyncCommitting(GlobalSession globalSession) {
         try {
             globalSession.addSessionLifecycleListener(getAsyncCommittingSessionManager());
@@ -209,6 +247,13 @@ public class SessionHolder {
         }
     }
 
+    /**
+     * 锁分支会话
+     * @see DataBaseLockManager
+     * @see FileLockManager
+     * @see RedisLockManager
+     * @param branchSessions
+     */
     private static void lockBranchSessions(ArrayList<BranchSession> branchSessions) {
         branchSessions.forEach(branchSession -> {
             try {

@@ -25,14 +25,14 @@ import io.seata.core.rpc.Disposable;
 
 /**
  * The interface Session manager.
- *
+ * 会话管理器
  * @author sharajava
  */
 public interface SessionManager extends SessionLifecycleListener, Disposable {
 
     /**
      * Add global session.
-     *
+     * 添加全局会话
      * @param session the session
      * @throws TransactionException the transaction exception
      */
@@ -40,7 +40,7 @@ public interface SessionManager extends SessionLifecycleListener, Disposable {
 
     /**
      * Find global session global session.
-     *
+     * 根据全局事务id，获取全局事务会话
      * @param xid the xid
      * @return the global session
      */
@@ -74,7 +74,7 @@ public interface SessionManager extends SessionLifecycleListener, Disposable {
 
     /**
      * Add branch session.
-     *
+     * 添加分支会话
      * @param globalSession the global session
      * @param session       the session
      * @throws TransactionException the transaction exception

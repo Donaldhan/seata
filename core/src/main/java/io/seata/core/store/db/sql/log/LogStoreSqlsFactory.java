@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * @see MysqlLogStoreSqls
+ * @see PostgresqlLogStoreSqls
  * @author will
  */
 public class LogStoreSqlsFactory {

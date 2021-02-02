@@ -19,7 +19,7 @@ import io.seata.common.util.StringUtils;
 
 /**
  * The type Row lock.
- *
+ * 行锁
  * @author zhangsen
  */
 public class RowLock {
@@ -34,6 +34,9 @@ public class RowLock {
 
     private String tableName;
 
+    /**
+     * 主键
+     */
     private String pk;
 
     private String rowKey;

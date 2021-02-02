@@ -40,6 +40,7 @@ import io.seata.core.constants.ServerTableColumnsName;
 import io.seata.core.store.LockDO;
 import io.seata.core.store.LockStore;
 import io.seata.core.store.db.sql.lock.LockStoreSqlFactory;
+import io.seata.core.store.db.sql.lock.MysqlLockStoreSql;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,6 +97,13 @@ public class LockStoreDataBaseDAO implements LockStore {
         return acquireLock(Collections.singletonList(lockDO));
     }
 
+    /**
+     * 行记录被其他全局事务锁定， 不可锁定
+     * 否则，查询全局事务id，table，branchId，dbPk 对应的锁，针对不存的行记录锁，
+     * 则插入相关的锁记录信息（id，table，branchId，dbPk）
+     * @param lockDOs the lock d os
+     * @return
+     */
     @Override
     public boolean acquireLock(List<LockDO> lockDOs) {
         Connection conn = null;
@@ -111,13 +119,13 @@ public class LockStoreDataBaseDAO implements LockStore {
             if (originalAutoCommit = conn.getAutoCommit()) {
                 conn.setAutoCommit(false);
             }
-            //check lock
+            //check lock 检查，被锁的行记录， rowKey 占位符
             StringJoiner sj = new StringJoiner(",");
             for (int i = 0; i < lockDOs.size(); i++) {
                 sj.add("?");
             }
             boolean canLock = true;
-            //query
+            //query 查询锁
             String checkLockSQL = LockStoreSqlFactory.getLogStoreSql(dbType).getCheckLockableSql(lockTable, sj.toString());
             ps = conn.prepareStatement(checkLockSQL);
             for (int i = 0; i < lockDOs.size(); i++) {
@@ -128,6 +136,7 @@ public class LockStoreDataBaseDAO implements LockStore {
             while (rs.next()) {
                 String dbXID = rs.getString(ServerTableColumnsName.LOCK_TABLE_XID);
                 if (!StringUtils.equals(dbXID, currentXID)) {
+                    //行记录被其他全局事务锁定
                     if (LOGGER.isInfoEnabled()) {
                         String dbPk = rs.getString(ServerTableColumnsName.LOCK_TABLE_PK);
                         String dbTableName = rs.getString(ServerTableColumnsName.LOCK_TABLE_TABLE_NAME);
@@ -135,9 +144,11 @@ public class LockStoreDataBaseDAO implements LockStore {
                         LOGGER.info("Global lock on [{}:{}] is holding by xid {} branchId {}", dbTableName, dbPk, dbXID,
                             dbBranchId);
                     }
+                    //持有则不可锁
                     canLock &= false;
                     break;
                 }
+                //已锁的行记录
                 dbExistedRowKeys.add(rs.getString(ServerTableColumnsName.LOCK_TABLE_ROW_KEY));
             }
 
@@ -156,7 +167,7 @@ public class LockStoreDataBaseDAO implements LockStore {
                 conn.rollback();
                 return true;
             }
-            //lock
+            //lock， 锁住剩余的行
             if (unrepeatedLockDOs.size() == 1) {
                 LockDO lockDO = unrepeatedLockDOs.get(0);
                 if (!doAcquireLock(conn, lockDO)) {
@@ -320,7 +331,8 @@ public class LockStoreDataBaseDAO implements LockStore {
 
     /**
      * Do acquire lock boolean.
-     *
+     *  获取锁，mysql 批量插入语
+     *  {@link MysqlLockStoreSql#getInsertLockSQL(String)}  }
      * @param conn    the conn
      * @param lockDOs the lock do list
      * @return the boolean

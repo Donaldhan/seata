@@ -66,12 +66,14 @@ public abstract class AbstractLogStoreSqls implements LogStoreSqls {
 
     /**
      * The constant DELETE_GLOBAL_TRANSACTION.
+     * 删除全局事务，根据全局事务id
      */
     public static final String DELETE_GLOBAL_TRANSACTION = "delete from " + GLOBAL_TABLE_PLACEHOLD
             + " where " + ServerTableColumnsName.GLOBAL_TABLE_XID + " = ?";
 
     /**
      * The constant QUERY_GLOBAL_TRANSACTION.
+     * 查询全局事务事务，根据全局事务id
      */
     public static final String QUERY_GLOBAL_TRANSACTION = "select " + ALL_GLOBAL_COLUMNS
             + "  from " + GLOBAL_TABLE_PLACEHOLD
@@ -79,6 +81,7 @@ public abstract class AbstractLogStoreSqls implements LogStoreSqls {
 
     /**
      * The constant QUERY_GLOBAL_TRANSACTION_ID.
+     * 查询全局事务根据事务id
      */
     public static final String QUERY_GLOBAL_TRANSACTION_BY_ID = "select " + ALL_GLOBAL_COLUMNS
             + "  from " + GLOBAL_TABLE_PLACEHOLD
@@ -86,6 +89,7 @@ public abstract class AbstractLogStoreSqls implements LogStoreSqls {
 
     /**
      * The constant DELETE_BRANCH_TRANSACTION_BY_BRANCH_ID.
+     * 根据事务id删除分支事务
      */
     public static final String DELETE_BRANCH_TRANSACTION_BY_BRANCH_ID = "delete from " + BRANCH_TABLE_PLACEHOLD
             + " where " + ServerTableColumnsName.BRANCH_TABLE_XID + " = ?"
@@ -93,6 +97,7 @@ public abstract class AbstractLogStoreSqls implements LogStoreSqls {
 
     /**
      * The constant DELETE_BRANCH_TRANSACTION_BY_XID.
+     * 根据全局事务id删除事物分支
      */
     public static final String DELETE_BRANCH_TRANSACTION_BY_XID = "delete from " + BRANCH_TABLE_PLACEHOLD
             + " where " + ServerTableColumnsName.BRANCH_TABLE_XID + " = ?";
@@ -100,6 +105,7 @@ public abstract class AbstractLogStoreSqls implements LogStoreSqls {
 
     /**
      * The constant QUERY_BRANCH_TRANSACTION.
+     * 查询事务分支
      */
     public static final String QUERY_BRANCH_TRANSACTION = "select " + ALL_BRANCH_COLUMNS
             + "  from " + BRANCH_TABLE_PLACEHOLD
@@ -108,6 +114,7 @@ public abstract class AbstractLogStoreSqls implements LogStoreSqls {
 
     /**
      * The constant QUERY_BRANCH_TRANSACTION_XIDS.
+     * 查询所有分支事务id
      */
     public static final String QUERY_BRANCH_TRANSACTION_XIDS = "select " + ALL_BRANCH_COLUMNS
             + "  from " + BRANCH_TABLE_PLACEHOLD
@@ -116,6 +123,7 @@ public abstract class AbstractLogStoreSqls implements LogStoreSqls {
 
     /**
      * The constant CHECK_MAX_TRANS_ID.
+     * 最大全局事务id
      */
     public static final String QUERY_MAX_TRANS_ID = "select max(" + ServerTableColumnsName.GLOBAL_TABLE_TRANSACTION_ID + ")"
             + "  from " + GLOBAL_TABLE_PLACEHOLD
@@ -124,6 +132,7 @@ public abstract class AbstractLogStoreSqls implements LogStoreSqls {
 
     /**
      * The constant CHECK_MAX_BTANCH_ID.
+     * 最大分支id
      */
     public static final String QUERY_MAX_BTANCH_ID = "select max(" + ServerTableColumnsName.BRANCH_TABLE_BRANCH_ID + ")"
             + "  from " + BRANCH_TABLE_PLACEHOLD

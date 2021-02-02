@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The Data base session manager.
- *
+ * 基于数据库的会话管理器
  * @author zhangsen
  */
 @LoadLevel(name = "db", scope = Scope.PROTOTYPE)
@@ -166,14 +166,17 @@ public class DataBaseSessionManager extends AbstractSessionManager
     public Collection<GlobalSession> allSessions() {
         // get by taskName
         if (SessionHolder.ASYNC_COMMITTING_SESSION_MANAGER_NAME.equalsIgnoreCase(taskName)) {
+            //异步提交会话
             return findGlobalSessions(new SessionCondition(GlobalStatus.AsyncCommitting));
         } else if (SessionHolder.RETRY_COMMITTING_SESSION_MANAGER_NAME.equalsIgnoreCase(taskName)) {
+            //重试提交会话
             return findGlobalSessions(new SessionCondition(new GlobalStatus[] {GlobalStatus.CommitRetrying}));
         } else if (SessionHolder.RETRY_ROLLBACKING_SESSION_MANAGER_NAME.equalsIgnoreCase(taskName)) {
+            //重试回滚会话
             return findGlobalSessions(new SessionCondition(new GlobalStatus[] {GlobalStatus.RollbackRetrying,
                 GlobalStatus.Rollbacking, GlobalStatus.TimeoutRollbacking, GlobalStatus.TimeoutRollbackRetrying}));
         } else {
-            // all data
+            // all data， 所有会话
             return findGlobalSessions(new SessionCondition(new GlobalStatus[] {
                 GlobalStatus.UnKnown, GlobalStatus.Begin,
                 GlobalStatus.Committing, GlobalStatus.CommitRetrying, GlobalStatus.Rollbacking,

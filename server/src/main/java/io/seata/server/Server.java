@@ -80,9 +80,9 @@ public class Server {
         //server port
         nettyRemotingServer.setListenPort(parameterParser.getPort());
         UUIDGenerator.init(parameterParser.getServerNode());
-        //log store mode : file, db, redis
+        //log store mode : file, db, redis 初始化存储模式
         SessionHolder.init(parameterParser.getStoreMode());
-
+        // TODO
         DefaultCoordinator coordinator = new DefaultCoordinator(nettyRemotingServer);
         coordinator.init();
         nettyRemotingServer.setHandler(coordinator);

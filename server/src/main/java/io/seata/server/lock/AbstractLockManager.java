@@ -113,7 +113,7 @@ public abstract class AbstractLockManager implements LockManager {
 
     /**
      * Collect row locks list.`
-     *
+     * 所有的行锁
      * @param branchSession the branch session
      * @return the list
      */
@@ -145,7 +145,8 @@ public abstract class AbstractLockManager implements LockManager {
 
     /**
      * Collect row locks list.
-     *
+     * user:1,2,3;order:4,6
+     * lockKey: table1:pk1,pk2,pk3;table2:pk6,pk7
      * @param lockKey       the lock key
      * @param resourceId    the resource id
      * @param xid           the xid
@@ -179,6 +180,7 @@ public abstract class AbstractLockManager implements LockManager {
                     rowLock.setTransactionId(transactionId);
                     rowLock.setBranchId(branchID);
                     rowLock.setTableName(tableName);
+                    //主键
                     rowLock.setPk(pk);
                     rowLock.setResourceId(resourceId);
                     locks.add(rowLock);

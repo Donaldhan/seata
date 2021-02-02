@@ -21,12 +21,15 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import io.seata.server.storage.db.lock.DataBaseLockManager;
+import io.seata.server.storage.file.lock.FileLockManager;
 import io.seata.server.storage.file.lock.FileLocker;
 import io.seata.common.util.CompressUtil;
 import io.seata.core.exception.TransactionException;
 import io.seata.core.model.BranchStatus;
 import io.seata.core.model.BranchType;
 import io.seata.server.lock.LockerManagerFactory;
+import io.seata.server.storage.redis.lock.RedisLockManager;
 import io.seata.server.store.SessionStorable;
 import io.seata.server.store.StoreConfig;
 import org.slf4j.Logger;
@@ -34,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The type Branch session.
- *
+ * 分支会话
  * @author sharajava
  */
 public class BranchSession implements Lockable, Comparable<BranchSession>, SessionStorable {
@@ -46,22 +49,50 @@ public class BranchSession implements Lockable, Comparable<BranchSession>, Sessi
     private static ThreadLocal<ByteBuffer> byteBufferThreadLocal = ThreadLocal.withInitial(() -> ByteBuffer.allocate(
         MAX_BRANCH_SESSION_SIZE));
 
+    /**
+     * 全局事务id
+     */
     private String xid;
 
+    /**
+     * 事务id
+     */
     private long transactionId;
 
+    /**
+     * 分支id
+     */
     private long branchId;
 
+    /**
+     * 资源分组id
+     */
     private String resourceGroupId;
 
+    /**
+     * 资源
+     */
     private String resourceId;
 
+    /**
+     * 锁key
+     * lockKey: table1:pk1,pk2,pk3;table2:pk6,pk7
+     */
     private String lockKey;
 
+    /**
+     * 分支事务类型
+     */
     private BranchType branchType;
 
+    /**
+     * 分支事务状态
+     */
     private BranchStatus status = BranchStatus.Unknown;
 
+    /**
+     *
+     */
     private String clientId;
 
     private String applicationData;
@@ -272,9 +303,17 @@ public class BranchSession implements Lockable, Comparable<BranchSession>, Sessi
         return lockHolder;
     }
 
+    /**
+     * @see DataBaseLockManager
+     * @see FileLockManager
+     * @see RedisLockManager
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public boolean lock() throws TransactionException {
         if (this.getBranchType().equals(BranchType.AT)) {
+            //AT 才需要
             return LockerManagerFactory.getLockManager().acquireLock(this);
         }
         return true;

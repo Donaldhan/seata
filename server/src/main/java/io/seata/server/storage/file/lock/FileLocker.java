@@ -31,13 +31,20 @@ import io.seata.server.session.BranchSession;
 
 /**
  * The type Memory locker.
- *
+ * 内存锁
  * @author zhangsen
  */
 public class FileLocker extends AbstractLocker {
 
+    /**
+     *
+     */
     private static final int BUCKET_PER_TABLE = 128;
 
+    /**
+     * 分支锁
+     * Key：resourceId，
+     */
     private static final ConcurrentMap<String/* resourceId */, ConcurrentMap<String/* tableName */,
         ConcurrentMap<Integer/* bucketId */, BucketLockMap>>>
         LOCK_MAP = new ConcurrentHashMap<>();
@@ -80,7 +87,7 @@ public class FileLocker extends AbstractLocker {
                 key -> new BucketLockMap());
             Long previousLockTransactionId = bucketLockMap.get().putIfAbsent(pk, transactionId);
             if (previousLockTransactionId == null) {
-                //No existing lock, and now locked by myself
+                //No existing lock, and now locked by myself， 没有锁，则加锁
                 Set<String> keysInHolder = CollectionUtils.computeIfAbsent(bucketHolder, bucketLockMap,
                     key -> new ConcurrentSet<>());
                 keysInHolder.add(pk);

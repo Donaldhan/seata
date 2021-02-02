@@ -96,8 +96,15 @@ public class DataBaseTransactionStoreManager extends AbstractTransactionStoreMan
         logStore = new LogStoreDataBaseDAO(logStoreDataSource);
     }
 
+    /**
+     * 存储全局会话,全局事务，分支的ADR
+     * @param logOperation the log operation
+     * @param session      the session
+     * @return
+     */
     @Override
     public boolean writeSession(LogOperation logOperation, SessionStorable session) {
+        //全局事务，分支的ADR
         if (LogOperation.GLOBAL_ADD.equals(logOperation)) {
             return logStore.insertGlobalTransactionDO(SessionConverter.convertGlobalTransactionDO(session));
         } else if (LogOperation.GLOBAL_UPDATE.equals(logOperation)) {
@@ -153,7 +160,7 @@ public class DataBaseTransactionStoreManager extends AbstractTransactionStoreMan
      */
     @Override
     public GlobalSession readSession(String xid, boolean withBranchSessions) {
-        //global transaction
+        //global transaction 全局事务
         GlobalTransactionDO globalTransactionDO = logStore.queryGlobalTransactionDO(xid);
         if (globalTransactionDO == null) {
             return null;
@@ -195,6 +202,7 @@ public class DataBaseTransactionStoreManager extends AbstractTransactionStoreMan
     @Override
     public List<GlobalSession> readSession(SessionCondition sessionCondition) {
         if (StringUtils.isNotBlank(sessionCondition.getXid())) {
+            //根据全局事务id
             GlobalSession globalSession = readSession(sessionCondition.getXid());
             if (globalSession != null) {
                 List<GlobalSession> globalSessions = new ArrayList<>();
@@ -202,6 +210,7 @@ public class DataBaseTransactionStoreManager extends AbstractTransactionStoreMan
                 return globalSessions;
             }
         } else if (sessionCondition.getTransactionId() != null) {
+            //根据分支事务id查询会话
             GlobalSession globalSession = readSession(sessionCondition.getTransactionId());
             if (globalSession != null) {
                 List<GlobalSession> globalSessions = new ArrayList<>();
@@ -209,11 +218,18 @@ public class DataBaseTransactionStoreManager extends AbstractTransactionStoreMan
                 return globalSessions;
             }
         } else if (CollectionUtils.isNotEmpty(sessionCondition.getStatuses())) {
+            //根据状态去查询
             return readSession(sessionCondition.getStatuses());
         }
         return null;
     }
 
+    /**
+     * 根据全局会话，分支事务会话，包装全局会话
+     * @param globalTransactionDO
+     * @param branchTransactionDOs
+     * @return
+     */
     private GlobalSession getGlobalSession(GlobalTransactionDO globalTransactionDO,
                                            List<BranchTransactionDO> branchTransactionDOs) {
         GlobalSession globalSession = SessionConverter.convertGlobalSession(globalTransactionDO);

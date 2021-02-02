@@ -19,13 +19,25 @@ import io.seata.core.model.GlobalStatus;
 
 /**
  * The type Session condition.
- *
+ * 会话类型条件
  * @author slievrly
  */
 public class SessionCondition {
+    /**
+     * 事务id
+     */
     private Long transactionId;
+    /**
+     * 全局事务id
+     */
     private String xid;
+    /**
+     * 全局事务状态
+     */
     private GlobalStatus status;
+    /**
+     * 全局事务状态集
+     */
     private GlobalStatus[] statuses;
     private long overTimeAliveMills;
 

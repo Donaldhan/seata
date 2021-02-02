@@ -54,34 +54,64 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
     private static ThreadLocal<ByteBuffer> byteBufferThreadLocal = ThreadLocal.withInitial(() -> ByteBuffer.allocate(
         MAX_GLOBAL_SESSION_SIZE));
 
+    /**
+     * 全局事务id
+     */
     private String xid;
 
     private long transactionId;
 
+    /**
+     * 全局事务状态
+     */
     private volatile GlobalStatus status;
 
+    /**
+     * 应用id
+     */
     private String applicationId;
 
+    /**
+     * 事务服务分组
+     */
     private String transactionServiceGroup;
 
+    /**
+     * 事务名
+     */
     private String transactionName;
 
+    /**
+     *
+     */
     private int timeout;
 
+    /**
+     * 开始时间
+     */
     private long beginTime;
 
+    /**
+     * 应用数据
+     */
     private String applicationData;
 
     private volatile boolean active = true;
 
+    /**
+     * 分支回话
+     */
     private final ArrayList<BranchSession> branchSessions = new ArrayList<>();
 
+    /**
+     * 全局会话锁
+     */
     private GlobalSessionLock globalSessionLock = new GlobalSessionLock();
 
 
     /**
      * Add boolean.
-     *
+     * 添加分支会话
      * @param branchSession the branch session
      * @return the boolean
      */
@@ -91,7 +121,7 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
 
     /**
      * Remove boolean.
-     *
+     * 移除回话
      * @param branchSession the branch session
      * @return the boolean
      */
@@ -103,7 +133,7 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
 
     /**
      * Can be committed async boolean.
-     *
+     * 是否可以异步提交
      * @return the boolean
      */
     public boolean canBeCommittedAsync() {
@@ -117,7 +147,7 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
 
     /**
      * Is saga type transaction
-     *
+     * Saga事务类型
      * @return is saga
      */
     public boolean isSaga() {
@@ -607,6 +637,9 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
         globalSessionLock.unlock();
     }
 
+    /**
+     * 全局回话锁
+     */
     private static class GlobalSessionLock {
 
         private Lock globalSessionLock = new ReentrantLock();

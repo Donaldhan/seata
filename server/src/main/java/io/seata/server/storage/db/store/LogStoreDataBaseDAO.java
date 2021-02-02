@@ -405,6 +405,12 @@ public class LogStoreDataBaseDAO implements LogStore {
         return max;
     }
 
+    /**
+     * 全局事务
+     * @param rs
+     * @return
+     * @throws SQLException
+     */
     private GlobalTransactionDO convertGlobalTransactionDO(ResultSet rs) throws SQLException {
         GlobalTransactionDO globalTransactionDO = new GlobalTransactionDO();
         globalTransactionDO.setXid(rs.getString(ServerTableColumnsName.GLOBAL_TABLE_XID));
@@ -422,6 +428,12 @@ public class LogStoreDataBaseDAO implements LogStore {
         return globalTransactionDO;
     }
 
+    /**
+     * 分支事务
+     * @param rs
+     * @return
+     * @throws SQLException
+     */
     private BranchTransactionDO convertBranchTransactionDO(ResultSet rs) throws SQLException {
         BranchTransactionDO branchTransactionDO = new BranchTransactionDO();
         branchTransactionDO.setResourceGroupId(rs.getString(ServerTableColumnsName.BRANCH_TABLE_RESOURCE_GROUP_ID));

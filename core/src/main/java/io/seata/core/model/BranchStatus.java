@@ -29,6 +29,7 @@ public enum BranchStatus {
 
     /**
      * The Unknown.
+     * 未知
      * description:Unknown branch status.
      */
     Unknown(0),
@@ -36,41 +37,48 @@ public enum BranchStatus {
     /**
      * The Registered.
      * description:Registered to TC.
+     * 注册分支到TC
      */
     Registered(1),
 
     /**
      * The Phase one done.
      * description:Branch logic is successfully done at phase one.
+     * 一阶段结束
      */
     PhaseOne_Done(2),
 
     /**
      * The Phase one failed.
      * description:Branch logic is failed at phase one.
+     * 一阶段失败
      */
     PhaseOne_Failed(3),
 
     /**
      * The Phase one timeout.
+     * 一阶段超时
      * description:Branch logic is NOT reported for a timeout.
      */
     PhaseOne_Timeout(4),
 
     /**
      * The Phase two committed.
+     * 两阶段提交
      * description:Commit logic is successfully done at phase two.
      */
     PhaseTwo_Committed(5),
 
     /**
      * The Phase two commit failed retryable.
+     * 两阶段提交失败，可以重试
      * description:Commit logic is failed but retryable.
      */
     PhaseTwo_CommitFailed_Retryable(6),
 
     /**
      * The Phase two commit failed unretryable.
+     * 两阶段提交失败，不可以重试
      * description:Commit logic is failed and NOT retryable.
      */
     PhaseTwo_CommitFailed_Unretryable(7),
@@ -78,17 +86,20 @@ public enum BranchStatus {
     /**
      * The Phase two rollbacked.
      * description:Rollback logic is successfully done at phase two.
+     * 两阶段回滚
      */
     PhaseTwo_Rollbacked(8),
 
     /**
      * The Phase two rollback failed retryable.
+     * 两阶段，可尝试回滚
      * description:Rollback logic is failed but retryable.
      */
     PhaseTwo_RollbackFailed_Retryable(9),
 
     /**
      * The Phase two rollback failed unretryable.
+     * 两阶段，不可尝试回滚
      * description:Rollback logic is failed but NOT retryable.
      */
     PhaseTwo_RollbackFailed_Unretryable(10);

@@ -116,6 +116,7 @@ public class RedisLocker extends AbstractLocker {
             Pipeline pipeline = jedis.pipelined();
             List<String> readyKeys = new ArrayList<>();
             needAddLock.forEach((key, value) -> {
+                //hsetnx
                 pipeline.hsetnx(key, XID, value.getXid());
                 pipeline.hsetnx(key, TRANSACTION_ID, value.getTransactionId().toString());
                 pipeline.hsetnx(key, BRANCH_ID, value.getBranchId().toString());
