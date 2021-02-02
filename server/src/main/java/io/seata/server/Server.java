@@ -82,7 +82,7 @@ public class Server {
         UUIDGenerator.init(parameterParser.getServerNode());
         //log store mode : file, db, redis 初始化存储模式
         SessionHolder.init(parameterParser.getStoreMode());
-        //
+        //默认事务协调器 TODO
         DefaultCoordinator coordinator = new DefaultCoordinator(nettyRemotingServer);
         coordinator.init();
         nettyRemotingServer.setHandler(coordinator);
