@@ -197,12 +197,14 @@ public class SessionHolder {
                             switch (globalStatus) {
                                 case Committing:
                                 case CommitRetrying:
+                                    //添加局会话到重试提交会话管理
                                     queueToRetryCommit(globalSession);
                                     break;
                                 case Rollbacking:
                                 case RollbackRetrying:
                                 case TimeoutRollbacking:
                                 case TimeoutRollbackRetrying:
+                                    // 添加全局会话到重试回滚会话管理器
                                     queueToRetryRollback(globalSession);
                                     break;
                                 case Begin:
@@ -264,6 +266,10 @@ public class SessionHolder {
         });
     }
 
+    /**
+     * 添加全局会话到重试提交会话管理器
+     * @param globalSession
+     */
     private static void queueToRetryCommit(GlobalSession globalSession) {
         try {
             globalSession.addSessionLifecycleListener(getRetryCommittingSessionManager());
@@ -273,6 +279,10 @@ public class SessionHolder {
         }
     }
 
+    /**
+     * 添加全局会话到重试回滚会话管理器
+     * @param globalSession
+     */
     private static void queueToRetryRollback(GlobalSession globalSession) {
         try {
             globalSession.addSessionLifecycleListener(getRetryRollbackingSessionManager());
