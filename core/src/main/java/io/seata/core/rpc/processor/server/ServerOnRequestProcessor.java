@@ -71,6 +71,11 @@ public class ServerOnRequestProcessor implements RemotingProcessor {
         this.transactionMessageHandler = transactionMessageHandler;
     }
 
+    /**
+     * @param ctx        Channel handler context.
+     * @param rpcMessage rpc message.
+     * @throws Exception
+     */
     @Override
     public void process(ChannelHandlerContext ctx, RpcMessage rpcMessage) throws Exception {
         if (ChannelManager.isRegistered(ctx.channel())) {
@@ -91,6 +96,13 @@ public class ServerOnRequestProcessor implements RemotingProcessor {
         }
     }
 
+    /**
+     * {@link/
+     * io.seata.server.coordinator.DefaultCoordinator#onRequest(io.seata.core.protocol.AbstractMessage, io.seata.core.rpc.RpcContext)
+     * }
+     * @param ctx
+     * @param rpcMessage
+     */
     private void onRequestMessage(ChannelHandlerContext ctx, RpcMessage rpcMessage) {
         Object message = rpcMessage.getBody();
         RpcContext rpcContext = ChannelManager.getContextFromIdentified(ctx.channel());

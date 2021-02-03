@@ -39,21 +39,27 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * The type channel manager.
  *
+ * 通道管理器
  * @author slievrly
  */
 public class ChannelManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChannelManager.class);
+    /**
+     * 通道RpcContext容器
+     */
     private static final ConcurrentMap<Channel, RpcContext> IDENTIFIED_CHANNELS = new ConcurrentHashMap<>();
 
     /**
      * resourceId -> applicationId -> ip -> port -> RpcContext
+     * RM 通道
      */
     private static final ConcurrentMap<String, ConcurrentMap<String, ConcurrentMap<String,
         ConcurrentMap<Integer, RpcContext>>>> RM_CHANNELS = new ConcurrentHashMap<>();
 
     /**
      * ip+appname,port
+     * TM 通道
      */
     private static final ConcurrentMap<String, ConcurrentMap<Integer, RpcContext>> TM_CHANNELS
         = new ConcurrentHashMap<>();
@@ -84,7 +90,7 @@ public class ChannelManager {
 
     /**
      * Gets get context from identified.
-     *
+     * 从通道RpcContext容器获取RPC上下文
      * @param channel the channel
      * @return the get context from identified
      */
@@ -100,6 +106,15 @@ public class ChannelManager {
         return clientId.split(Constants.CLIENT_ID_SPLIT_CHAR);
     }
 
+    /**
+     * @param clientRole
+     * @param version
+     * @param applicationId
+     * @param txServiceGroup
+     * @param dbkeys
+     * @param channel
+     * @return
+     */
     private static RpcContext buildChannelHolder(NettyPoolKey.TransactionRole clientRole, String version, String applicationId,
                                                  String txServiceGroup, String dbkeys, Channel channel) {
         RpcContext holder = new RpcContext();
@@ -115,7 +130,7 @@ public class ChannelManager {
 
     /**
      * Register tm channel.
-     *
+     * 注册TM 通道
      * @param request the request
      * @param channel the channel
      * @throws IncompatibleVersionException the incompatible version exception
@@ -127,6 +142,7 @@ public class ChannelManager {
             request.getApplicationId(),
             request.getTransactionServiceGroup(),
             null, channel);
+        //建立通道和RpcContext的关系
         rpcContext.holdInIdentifiedChannels(IDENTIFIED_CHANNELS);
         String clientIdentified = rpcContext.getApplicationId() + Constants.CLIENT_ID_SPLIT_CHAR
             + ChannelUtil.getClientIpFromChannel(channel);
@@ -137,7 +153,7 @@ public class ChannelManager {
 
     /**
      * Register rm channel.
-     *
+     * 注册RM 通道
      * @param resourceManagerRequest the resource manager request
      * @param channel                the channel
      * @throws IncompatibleVersionException the incompatible  version exception
@@ -145,12 +161,14 @@ public class ChannelManager {
     public static void registerRMChannel(RegisterRMRequest resourceManagerRequest, Channel channel)
         throws IncompatibleVersionException {
         Version.checkVersion(resourceManagerRequest.getVersion());
+        //获取 db key
         Set<String> dbkeySet = dbKeytoSet(resourceManagerRequest.getResourceIds());
         RpcContext rpcContext;
         if (!IDENTIFIED_CHANNELS.containsKey(channel)) {
             rpcContext = buildChannelHolder(NettyPoolKey.TransactionRole.RMROLE, resourceManagerRequest.getVersion(),
                 resourceManagerRequest.getApplicationId(), resourceManagerRequest.getTransactionServiceGroup(),
                 resourceManagerRequest.getResourceIds(), channel);
+            //建立通道和RpcContext的关系
             rpcContext.holdInIdentifiedChannels(IDENTIFIED_CHANNELS);
         } else {
             rpcContext = IDENTIFIED_CHANNELS.get(channel);
@@ -164,10 +182,17 @@ public class ChannelManager {
                     .computeIfAbsent(clientIp = ChannelUtil.getClientIpFromChannel(channel), key -> new ConcurrentHashMap<>());
 
             rpcContext.holdInResourceManagerChannels(resourceId, portMap);
+            //更新RM通道资源
             updateChannelsResource(resourceId, clientIp, resourceManagerRequest.getApplicationId());
         }
     }
 
+    /**
+     * 更新RM通道资源
+     * @param resourceId
+     * @param clientIp
+     * @param applicationId
+     */
     private static void updateChannelsResource(String resourceId, String clientIp, String applicationId) {
         ConcurrentMap<Integer, RpcContext> sourcePortMap = RM_CHANNELS.get(resourceId).get(applicationId).get(clientIp);
         for (ConcurrentMap.Entry<String, ConcurrentMap<String, ConcurrentMap<String, ConcurrentMap<Integer,
@@ -191,6 +216,11 @@ public class ChannelManager {
         }
     }
 
+    /**
+     * 获取 db key
+     * @param dbkey
+     * @return
+     */
     private static Set<String> dbKeytoSet(String dbkey) {
         if (StringUtils.isNullOrEmpty(dbkey)) {
             return null;
@@ -200,7 +230,7 @@ public class ChannelManager {
 
     /**
      * Release rpc context.
-     *
+     * 释放RPC资源
      * @param channel the channel
      */
     public static void releaseRpcContext(Channel channel) {

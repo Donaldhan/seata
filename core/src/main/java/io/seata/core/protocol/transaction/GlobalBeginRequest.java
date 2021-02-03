@@ -71,6 +71,13 @@ public class GlobalBeginRequest extends AbstractTransactionRequestToTC {
     }
 
 
+    /**
+     * {@link/
+     * io.seata.server.coordinator.DefaultCoordinator#doGlobalBegin(io.seata.core.protocol.transaction.GlobalBeginRequest,
+     * io.seata.core.protocol.transaction.GlobalBeginResponse, io.seata.core.rpc.RpcContext)}
+     * @param rpcContext the rpc context
+     * @return
+     */
     @Override
     public AbstractTransactionResponse handle(RpcContext rpcContext) {
         return handler.handle(this, rpcContext);

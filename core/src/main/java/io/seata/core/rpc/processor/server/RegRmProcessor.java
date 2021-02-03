@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * process RM client registry message.
+ * 处理RM的注册请求
  * <p>
  * process message type:
  * {@link RegisterRMRequest}
@@ -52,11 +53,20 @@ public class RegRmProcessor implements RemotingProcessor {
         this.checkAuthHandler = EnhancedServiceLoader.load(RegisterCheckAuthHandler.class);
     }
 
+    /**
+     * @param ctx        Channel handler context.
+     * @param rpcMessage rpc message.
+     * @throws Exception
+     */
     @Override
     public void process(ChannelHandlerContext ctx, RpcMessage rpcMessage) throws Exception {
         onRegRmMessage(ctx, rpcMessage);
     }
 
+    /**
+     * @param ctx
+     * @param rpcMessage
+     */
     private void onRegRmMessage(ChannelHandlerContext ctx, RpcMessage rpcMessage) {
         RegisterRMRequest message = (RegisterRMRequest) rpcMessage.getBody();
         String ipAndPort = NetUtil.toStringAddress(ctx.channel().remoteAddress());
@@ -64,6 +74,7 @@ public class RegRmProcessor implements RemotingProcessor {
         String errorInfo = StringUtils.EMPTY;
         try {
             if (null == checkAuthHandler || checkAuthHandler.regResourceManagerCheckAuth(message)) {
+                //注册请求消息通道
                 ChannelManager.registerRMChannel(message, ctx.channel());
                 Version.putChannelVersion(ctx.channel(), message.getVersion());
                 isSuccess = true;

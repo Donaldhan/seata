@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * process TM client registry message.
+ * 处理TM的注册请求
  * <p>
  * process message type:
  * {@link RegisterTMRequest}
@@ -57,6 +58,10 @@ public class RegTmProcessor implements RemotingProcessor {
         onRegTmMessage(ctx, rpcMessage);
     }
 
+    /**
+     * @param ctx
+     * @param rpcMessage
+     */
     private void onRegTmMessage(ChannelHandlerContext ctx, RpcMessage rpcMessage) {
         RegisterTMRequest message = (RegisterTMRequest) rpcMessage.getBody();
         String ipAndPort = NetUtil.toStringAddress(ctx.channel().remoteAddress());
@@ -65,6 +70,7 @@ public class RegTmProcessor implements RemotingProcessor {
         String errorInfo = StringUtils.EMPTY;
         try {
             if (null == checkAuthHandler || checkAuthHandler.regTransactionManagerCheckAuth(message)) {
+                //注册TM通道
                 ChannelManager.registerTMChannel(message, ctx.channel());
                 Version.putChannelVersion(ctx.channel(), message.getVersion());
                 isSuccess = true;

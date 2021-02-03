@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 /**
  * The type Heartbeat message.
- *
+ * 心跳消息 PING/PONG
  * @author slievrly
  */
 public class HeartbeatMessage implements MessageTypeAware, Serializable {

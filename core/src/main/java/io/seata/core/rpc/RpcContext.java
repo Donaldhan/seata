@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * The type rpc context.
  *
+ * RPC 上下文
  * @author slievrly
  */
 public class RpcContext {
@@ -58,7 +59,7 @@ public class RpcContext {
     private ConcurrentMap<Channel, RpcContext> clientIDHolderMap;
 
     /**
-     * tm
+     * tm， Key： rort
      */
     private ConcurrentMap<Integer, RpcContext> clientTMHolderMap;
 
@@ -68,6 +69,7 @@ public class RpcContext {
     private ConcurrentMap<String, ConcurrentMap<Integer, RpcContext>> clientRMHolderMap;
 
     /**
+     * 根据事务角色（RM、TM）从RPC上下文的TM和RM容器中移除对应的RM或TM
      * Release.
      */
     public void release() {
@@ -76,16 +78,19 @@ public class RpcContext {
             clientIDHolderMap = null;
         }
         if (clientRole == NettyPoolKey.TransactionRole.TMROLE && clientTMHolderMap != null) {
+            //移除TM
             clientTMHolderMap.remove(clientPort);
             clientTMHolderMap = null;
         }
         if (clientRole == NettyPoolKey.TransactionRole.RMROLE && clientRMHolderMap != null) {
             for (Map<Integer, RpcContext> portMap : clientRMHolderMap.values()) {
+                //移除RM
                 portMap.remove(clientPort);
             }
             clientRMHolderMap = null;
         }
         if (resourceSets != null) {
+            //清除资源
             resourceSets.clear();
         }
     }
@@ -300,7 +305,7 @@ public class RpcContext {
 
     /**
      * Add resources.
-     *
+     * 添加资源
      * @param resources the resources
      */
     public void addResources(Set<String> resources) {

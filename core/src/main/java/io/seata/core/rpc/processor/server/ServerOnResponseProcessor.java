@@ -63,10 +63,16 @@ public class ServerOnResponseProcessor implements RemotingProcessor {
         this.futures = futures;
     }
 
+    /**
+     * @param ctx        Channel handler context.
+     * @param rpcMessage rpc message.
+     * @throws Exception
+     */
     @Override
     public void process(ChannelHandlerContext ctx, RpcMessage rpcMessage) throws Exception {
         MessageFuture messageFuture = futures.remove(rpcMessage.getId());
         if (messageFuture != null) {
+            //设置请求响应结果
             messageFuture.setResultMessage(rpcMessage.getBody());
         } else {
             if (ChannelManager.isRegistered(ctx.channel())) {
@@ -88,6 +94,10 @@ public class ServerOnResponseProcessor implements RemotingProcessor {
         }
     }
 
+    /**
+     * @param ctx
+     * @param rpcMessage
+     */
     private void onResponseMessage(ChannelHandlerContext ctx, RpcMessage rpcMessage) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("server received:{},clientIp:{},vgroup:{}", rpcMessage.getBody(),

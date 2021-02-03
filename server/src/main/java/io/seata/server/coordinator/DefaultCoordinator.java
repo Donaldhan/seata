@@ -489,6 +489,7 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
     @Override
     public void onResponse(AbstractResultMessage response, RpcContext context) {
         if (!(response instanceof AbstractTransactionResponse)) {
+            //done nothing
             throw new IllegalArgumentException();
         }
 

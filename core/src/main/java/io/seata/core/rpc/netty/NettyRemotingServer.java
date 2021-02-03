@@ -105,20 +105,30 @@ public class NettyRemotingServer extends AbstractNettyRemotingServer {
         // 1. registry on request message processor， server请求处理器
         ServerOnRequestProcessor onRequestProcessor =
             new ServerOnRequestProcessor(this, getHandler());
-        //
+        //分支注册
         super.registerProcessor(MessageType.TYPE_BRANCH_REGISTER, onRequestProcessor, messageExecutor);
+        //分支状态上报
         super.registerProcessor(MessageType.TYPE_BRANCH_STATUS_REPORT, onRequestProcessor, messageExecutor);
+        //全局事务开始
         super.registerProcessor(MessageType.TYPE_GLOBAL_BEGIN, onRequestProcessor, messageExecutor);
+        //全局事务提交
         super.registerProcessor(MessageType.TYPE_GLOBAL_COMMIT, onRequestProcessor, messageExecutor);
+        //全局事务锁查询
         super.registerProcessor(MessageType.TYPE_GLOBAL_LOCK_QUERY, onRequestProcessor, messageExecutor);
+        //全局事务状态上报
         super.registerProcessor(MessageType.TYPE_GLOBAL_REPORT, onRequestProcessor, messageExecutor);
+        //全局事务回滚
         super.registerProcessor(MessageType.TYPE_GLOBAL_ROLLBACK, onRequestProcessor, messageExecutor);
+        //全局事务状态查询
         super.registerProcessor(MessageType.TYPE_GLOBAL_STATUS, onRequestProcessor, messageExecutor);
+        //SEGA 合并
         super.registerProcessor(MessageType.TYPE_SEATA_MERGE, onRequestProcessor, messageExecutor);
         // 2. registry on response message processor server 相应处理器
         ServerOnResponseProcessor onResponseProcessor =
             new ServerOnResponseProcessor(getHandler(), getFutures());
+        //分支提交结果
         super.registerProcessor(MessageType.TYPE_BRANCH_COMMIT_RESULT, onResponseProcessor, messageExecutor);
+        //分支回滚结果
         super.registerProcessor(MessageType.TYPE_BRANCH_ROLLBACK_RESULT, onResponseProcessor, messageExecutor);
         // 3. registry rm message processor RM 注册消息处理器
         RegRmProcessor regRmProcessor = new RegRmProcessor(this);
@@ -126,7 +136,7 @@ public class NettyRemotingServer extends AbstractNettyRemotingServer {
         // 4. registry tm message processor TM 注册消息处理器
         RegTmProcessor regTmProcessor = new RegTmProcessor(this);
         super.registerProcessor(MessageType.TYPE_REG_CLT, regTmProcessor, null);
-        // 5. registry heartbeat message processor 心跳处理器
+        // 5. registry heartbeat message processor 心跳处理器（心跳消息 PING/PONG）
         ServerHeartbeatProcessor heartbeatMessageProcessor = new ServerHeartbeatProcessor(this);
         super.registerProcessor(MessageType.TYPE_HEARTBEAT_MSG, heartbeatMessageProcessor, null);
     }
