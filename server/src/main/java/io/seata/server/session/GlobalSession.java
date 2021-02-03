@@ -714,6 +714,10 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
         this.changeStatus(GlobalStatus.CommitRetrying);
     }
 
+    /**
+     * 添加到全局会话到重试会馆会话管理器，并更新全局事务状态为{@link GlobalStatus#TimeoutRollbackRetrying}或{@link GlobalStatus#RollbackRetrying}
+     * @throws TransactionException
+     */
     public void queueToRetryRollback() throws TransactionException {
         this.addSessionLifecycleListener(SessionHolder.getRetryRollbackingSessionManager());
         SessionHolder.getRetryRollbackingSessionManager().addGlobalSession(this);

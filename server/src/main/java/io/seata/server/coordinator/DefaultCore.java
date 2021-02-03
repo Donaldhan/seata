@@ -127,6 +127,13 @@ public class DefaultCore implements Core {
         return getCore(branchSession.getBranchType()).branchCommit(globalSession, branchSession);
     }
 
+    /**
+     * 发送分支事务回滚消息
+     * @param globalSession the global session
+     * @param branchSession the branch session
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public BranchStatus branchRollback(GlobalSession globalSession, BranchSession branchSession) throws TransactionException {
         return getCore(branchSession.getBranchType()).branchRollback(globalSession, branchSession);
@@ -312,6 +319,11 @@ public class DefaultCore implements Core {
         return success;
     }
 
+    /**
+     * @param xid XID of the global transaction
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public GlobalStatus rollback(String xid) throws TransactionException {
         GlobalSession globalSession = SessionHolder.findGlobalSession(xid);
@@ -321,14 +333,18 @@ public class DefaultCore implements Core {
         globalSession.addSessionLifecycleListener(SessionHolder.getRootSessionManager());
         // just lock changeStatus
         boolean shouldRollBack = SessionHolder.lockAndExecute(globalSession, () -> {
-            globalSession.close(); // Highlight: Firstly, close the session, then no more branch can be registered.
+            //disable session
+            globalSession.close();
+            // Highlight: Firstly, close the session, then no more branch can be registered.
             if (globalSession.getStatus() == GlobalStatus.Begin) {
+                //开始状态可以回滚
                 globalSession.changeStatus(GlobalStatus.Rollbacking);
                 return true;
             }
             return false;
         });
         if (!shouldRollBack) {
+            //不可回滚，直接返回当前全局事务状态
             return globalSession.getStatus();
         }
 
@@ -336,10 +352,22 @@ public class DefaultCore implements Core {
         return globalSession.getStatus();
     }
 
+    /**
+     * 针对非SAGA模式事务：
+     * 遍历全局事务的分支事务会话，如果事务会话一阶段失败，移除分支会话；
+     * 否则发送回滚分支事务请求给RM分支，RM回滚本地分支事务；如果分支事务回滚成功，则移除分支事务；
+     * 如果分支事务回滚失败，不可尝试，结束全局事务，回滚失败（释放全局事务相关的锁，并从会话管理器中移除全局会话）；
+     * 如果所有分支事务全部回滚完，则结束全部事务（回滚成功Rollbacked，或回滚超时TimeoutRollbacked，释放全局事务相关的锁，并从会话管理器中移除全局会话）
+     *
+     * @param globalSession the global session
+     * @param retrying      the retrying
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public boolean doGlobalRollback(GlobalSession globalSession, boolean retrying) throws TransactionException {
         boolean success = true;
-        // start rollback event
+        // start rollback event 正在回滚事务
         eventBus.post(new GlobalTransactionEvent(globalSession.getTransactionId(), GlobalTransactionEvent.ROLE_TC,
             globalSession.getTransactionName(), globalSession.getBeginTime(), null, globalSession.getStatus()));
 
@@ -349,23 +377,28 @@ public class DefaultCore implements Core {
             for (BranchSession branchSession : globalSession.getReverseSortedBranches()) {
                 BranchStatus currentBranchStatus = branchSession.getStatus();
                 if (currentBranchStatus == BranchStatus.PhaseOne_Failed) {
+                    //一阶段失败，移除分支会话
                     globalSession.removeBranch(branchSession);
                     continue;
                 }
                 try {
+                    //发送分支事务回滚消息
                     BranchStatus branchStatus = branchRollback(globalSession, branchSession);
                     switch (branchStatus) {
                         case PhaseTwo_Rollbacked:
+                            //两阶段已回滚，移除分支
                             globalSession.removeBranch(branchSession);
                             LOGGER.info("Rollback branch transaction successfully, xid = {} branchId = {}", globalSession.getXid(), branchSession.getBranchId());
                             continue;
                         case PhaseTwo_RollbackFailed_Unretryable:
+                            //回滚失败，不可尝试，结束全局事务，回滚失败
                             SessionHelper.endRollbackFailed(globalSession);
                             LOGGER.info("Rollback branch transaction fail and stop retry, xid = {} branchId = {}", globalSession.getXid(), branchSession.getBranchId());
                             return false;
                         default:
                             LOGGER.info("Rollback branch transaction fail and will retry, xid = {} branchId = {}", globalSession.getXid(), branchSession.getBranchId());
                             if (!retrying) {
+                                //添加到全局会话到重试会馆会话管理器，并更新全局事务状态为{@link GlobalStatus#TimeoutRollbackRetrying}或{@link GlobalStatus#RollbackRetrying}
                                 globalSession.queueToRetryRollback();
                             }
                             return false;
@@ -387,6 +420,10 @@ public class DefaultCore implements Core {
             // 2. New branch transaction has data association with rollback branch transaction
             // The second query can solve the first problem, and if it is the second problem, it may cause a rollback
             // failure due to data changes.
+            // 在db模式喜爱，存在数据不一致的情况，将会导致在回滚过程，存在新的分支注册。
+            // 1. 新添加的事务分支和回滚分支没有任何关系
+            // 2. 新的事务分支和回滚分支事务存在数据关联
+            // 二次check， 可以解决一个问题，如果为第二个问题，由于数据改变会导致回滚失败。
             GlobalSession globalSessionTwice = SessionHolder.findGlobalSession(globalSession.getXid());
             if (globalSessionTwice != null && globalSessionTwice.hasBranch()) {
                 LOGGER.info("Rollbacking global transaction is NOT done, xid = {}.", globalSession.getXid());
@@ -394,9 +431,10 @@ public class DefaultCore implements Core {
             }
         }
         if (success) {
+            //结束全局事务（回滚成功Rollbacked，或回滚超时TimeoutRollbacked），释放全局事务相关的锁，并从会话管理器中移除全局会话
             SessionHelper.endRollbacked(globalSession);
 
-            // rollbacked event
+            // rollbacked event 回滚成功事件
             eventBus.post(new GlobalTransactionEvent(globalSession.getTransactionId(), GlobalTransactionEvent.ROLE_TC,
                 globalSession.getTransactionName(), globalSession.getBeginTime(), System.currentTimeMillis(),
                 globalSession.getStatus()));

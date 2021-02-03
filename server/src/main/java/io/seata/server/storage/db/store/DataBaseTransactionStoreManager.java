@@ -158,7 +158,7 @@ public class DataBaseTransactionStoreManager extends AbstractTransactionStoreMan
 
     /**
      * Read session global session.
-     *
+     * 查询全局事务会话，包括分支会话
      * @param xid the xid
      * @param withBranchSessions the withBranchSessions
      * @return the global session

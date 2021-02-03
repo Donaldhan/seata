@@ -103,7 +103,7 @@ public class SessionHelper {
 
     /**
      * End rollbacked.
-     *
+     * 结束全局事务（回滚成功Rollbacked，或回滚超时TimeoutRollbacked），释放全局事务相关的锁，并从会话管理器中移除全局会话
      * @param globalSession the global session
      * @throws TransactionException the transaction exception
      */
@@ -133,6 +133,11 @@ public class SessionHelper {
         globalSession.end();
     }
 
+    /**
+     * 超时回滚失败状态
+     * @param status
+     * @return
+     */
     public static boolean isTimeoutGlobalStatus(GlobalStatus status) {
         return status == GlobalStatus.TimeoutRollbacked
                 || status == GlobalStatus.TimeoutRollbackFailed
