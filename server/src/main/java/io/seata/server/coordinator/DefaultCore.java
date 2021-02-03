@@ -103,6 +103,18 @@ public class DefaultCore implements Core {
         coreMap.put(branchType, core);
     }
 
+    /**
+     * 注册分支事务
+     *
+     * @param branchType      the branch type
+     * @param resourceId      the resource id
+     * @param clientId        the client id
+     * @param xid             the xid
+     * @param applicationData the context
+     * @param lockKeys        the lock keys
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public Long branchRegister(BranchType branchType, String resourceId, String clientId, String xid,
                                String applicationData, String lockKeys) throws TransactionException {
@@ -110,6 +122,14 @@ public class DefaultCore implements Core {
             applicationData, lockKeys);
     }
 
+    /**
+     * @param branchType      the branch type
+     * @param xid             the xid
+     * @param branchId        the branch id
+     * @param status          the status
+     * @param applicationData the application data
+     * @throws TransactionException
+     */
     @Override
     public void branchReport(BranchType branchType, String xid, long branchId, BranchStatus status,
                              String applicationData) throws TransactionException {

@@ -61,26 +61,38 @@ public class ProtocolV1Encoder extends MessageToByteEncoder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProtocolV1Encoder.class);
 
+    /**
+     * 协议魔数+协议版本+总长度（head+body）+消息类型+消息编码器+消息压缩器+消息id+头部+body
+     * @param ctx
+     * @param msg
+     * @param out
+     */
     @Override
     public void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) {
         try {
             if (msg instanceof RpcMessage) {
                 RpcMessage rpcMessage = (RpcMessage) msg;
-
+                //head+body length
                 int fullLength = ProtocolConstants.V1_HEAD_LENGTH;
+                //head length
                 int headLength = ProtocolConstants.V1_HEAD_LENGTH;
-
+                //消息类型
                 byte messageType = rpcMessage.getMessageType();
+                //协议魔数
                 out.writeBytes(ProtocolConstants.MAGIC_CODE_BYTES);
+                //协议版本
                 out.writeByte(ProtocolConstants.VERSION);
                 // full Length(4B) and head length(2B) will fix in the end. 
                 out.writerIndex(out.writerIndex() + 6);
                 out.writeByte(messageType);
+                //消息编码器
                 out.writeByte(rpcMessage.getCodec());
+                //消息压缩器
                 out.writeByte(rpcMessage.getCompressor());
+                //消息id
                 out.writeInt(rpcMessage.getId());
 
-                // direct write head with zero-copy
+                // direct write head with zero-copy 头部数据
                 Map<String, String> headMap = rpcMessage.getHeadMap();
                 if (headMap != null && !headMap.isEmpty()) {
                     int headMapBytesLength = HeadMapSerializer.getInstance().encode(headMap, out);
@@ -91,7 +103,7 @@ public class ProtocolV1Encoder extends MessageToByteEncoder {
                 byte[] bodyBytes = null;
                 if (messageType != ProtocolConstants.MSGTYPE_HEARTBEAT_REQUEST
                         && messageType != ProtocolConstants.MSGTYPE_HEARTBEAT_RESPONSE) {
-                    // heartbeat has no body
+                    // heartbeat has no body 序列化请求数据，并压缩
                     Serializer serializer = EnhancedServiceLoader.load(Serializer.class, SerializerType.getByCode(rpcMessage.getCodec()).name());
                     bodyBytes = serializer.serialize(rpcMessage.getBody());
                     Compressor compressor = CompressorFactory.getCompressor(rpcMessage.getCompressor());
@@ -105,10 +117,11 @@ public class ProtocolV1Encoder extends MessageToByteEncoder {
 
                 // fix fullLength and headLength
                 int writeIndex = out.writerIndex();
-                // skip magic code(2B) + version(1B)
+                // skip magic code(2B) + version(1B) 跳过魔数和版本
                 out.writerIndex(writeIndex - fullLength + 3);
                 out.writeInt(fullLength);
                 out.writeShort(headLength);
+                //buffer writer index
                 out.writerIndex(writeIndex);
             } else {
                 throw new UnsupportedOperationException("Not support this class:" + msg.getClass());

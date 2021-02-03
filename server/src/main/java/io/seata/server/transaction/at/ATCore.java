@@ -41,6 +41,12 @@ public class ATCore extends AbstractCore {
         return BranchType.AT;
     }
 
+    /**
+     * 添加分支事务锁，即插入分支事务关联的行锁
+     * @param globalSession
+     * @param branchSession
+     * @throws TransactionException
+     */
     @Override
     protected void branchSessionLock(GlobalSession globalSession, BranchSession branchSession) throws TransactionException {
         if (!branchSession.lock()) {
@@ -50,6 +56,11 @@ public class ATCore extends AbstractCore {
         }
     }
 
+    /**
+     * 释放分支事务锁，即删除分支事务关联的行锁
+     * @param branchSession
+     * @throws TransactionException
+     */
     @Override
     protected void branchSessionUnlock(BranchSession branchSession) throws TransactionException {
         branchSession.unlock();

@@ -154,6 +154,12 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
         this.core = new DefaultCore(remotingServer);
     }
 
+    /**
+     * @param request    the request
+     * @param response   the response
+     * @param rpcContext the rpc context
+     * @throws TransactionException
+     */
     @Override
     protected void doGlobalBegin(GlobalBeginRequest request, GlobalBeginResponse response, RpcContext rpcContext)
         throws TransactionException {
@@ -165,30 +171,62 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
         }
     }
 
+    /**
+     * @param request    the request
+     * @param response   the response
+     * @param rpcContext the rpc context
+     * @throws TransactionException
+     */
     @Override
     protected void doGlobalCommit(GlobalCommitRequest request, GlobalCommitResponse response, RpcContext rpcContext)
         throws TransactionException {
         response.setGlobalStatus(core.commit(request.getXid()));
     }
 
+    /**
+     * @param request    the request
+     * @param response   the response
+     * @param rpcContext the rpc context
+     * @throws TransactionException
+     */
     @Override
     protected void doGlobalRollback(GlobalRollbackRequest request, GlobalRollbackResponse response,
                                     RpcContext rpcContext) throws TransactionException {
         response.setGlobalStatus(core.rollback(request.getXid()));
     }
 
+    /**
+     * @param request    the request
+     * @param response   the response
+     * @param rpcContext the rpc context
+     * @throws TransactionException
+     */
     @Override
     protected void doGlobalStatus(GlobalStatusRequest request, GlobalStatusResponse response, RpcContext rpcContext)
         throws TransactionException {
         response.setGlobalStatus(core.getStatus(request.getXid()));
     }
 
+    /**
+     * 针对SAGA模式：报告全局事务状态
+     * @param request    the request
+     * @param response   the response
+     * @param rpcContext the rpc context
+     * @throws TransactionException
+     */
     @Override
     protected void doGlobalReport(GlobalReportRequest request, GlobalReportResponse response, RpcContext rpcContext)
         throws TransactionException {
         response.setGlobalStatus(core.globalReport(request.getXid(), request.getGlobalStatus()));
     }
 
+    /**
+     * 注册分支
+     * @param request    the request
+     * @param response   the response
+     * @param rpcContext the rpc context
+     * @throws TransactionException
+     */
     @Override
     protected void doBranchRegister(BranchRegisterRequest request, BranchRegisterResponse response,
                                     RpcContext rpcContext) throws TransactionException {
@@ -197,6 +235,13 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
                 request.getXid(), request.getApplicationData(), request.getLockKey()));
     }
 
+    /**
+     * 报告分支状态
+     * @param request    the request
+     * @param response
+     * @param rpcContext the rpc context
+     * @throws TransactionException
+     */
     @Override
     protected void doBranchReport(BranchReportRequest request, BranchReportResponse response, RpcContext rpcContext)
         throws TransactionException {
@@ -204,6 +249,13 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
             request.getApplicationData());
     }
 
+    /**
+     * 是否可以加全局事务锁
+     * @param request    the request
+     * @param response   the response
+     * @param rpcContext the rpc context
+     * @throws TransactionException
+     */
     @Override
     protected void doLockCheck(GlobalLockQueryRequest request, GlobalLockQueryResponse response, RpcContext rpcContext)
         throws TransactionException {
@@ -213,7 +265,7 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
 
     /**
      * Timeout check.
-     *
+     * 检查全局事务是否超时
      * @throws TransactionException the transaction exception
      */
     protected void timeoutCheck() throws TransactionException {
@@ -351,6 +403,7 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
 
     /**
      * Undo log delete.
+     * 删除undo log 日志
      */
     protected void undoLogDelete() {
         Map<String, Channel> rmChannels = ChannelManager.getRmChannels();
@@ -377,8 +430,10 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
 
     /**
      * Init.
+     * 调度处理回滚、重试、异步全局事务事务，删除undo log
      */
     public void init() {
+        //处理回滚全局事务
         retryRollbacking.scheduleAtFixedRate(() -> {
             try {
                 handleRetryRollbacking();
@@ -386,7 +441,7 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
                 LOGGER.info("Exception retry rollbacking ... ", e);
             }
         }, 0, ROLLBACKING_RETRY_PERIOD, TimeUnit.MILLISECONDS);
-
+        //处理重试提交全局事务
         retryCommitting.scheduleAtFixedRate(() -> {
             try {
                 handleRetryCommitting();
@@ -394,7 +449,7 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
                 LOGGER.info("Exception retry committing ... ", e);
             }
         }, 0, COMMITTING_RETRY_PERIOD, TimeUnit.MILLISECONDS);
-
+        //处理异步提交全局事务
         asyncCommitting.scheduleAtFixedRate(() -> {
             try {
                 handleAsyncCommitting();
@@ -402,7 +457,7 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
                 LOGGER.info("Exception async committing ... ", e);
             }
         }, 0, ASYNC_COMMITTING_RETRY_PERIOD, TimeUnit.MILLISECONDS);
-
+        // 检查全局事务是否超时
         timeoutCheck.scheduleAtFixedRate(() -> {
             try {
                 timeoutCheck();
@@ -410,7 +465,7 @@ public class DefaultCoordinator extends AbstractTCInboundHandler implements Tran
                 LOGGER.info("Exception timeout checking ... ", e);
             }
         }, 0, TIMEOUT_RETRY_PERIOD, TimeUnit.MILLISECONDS);
-
+        //undo log 删除调度
         undoLogDelete.scheduleAtFixedRate(() -> {
             try {
                 undoLogDelete();

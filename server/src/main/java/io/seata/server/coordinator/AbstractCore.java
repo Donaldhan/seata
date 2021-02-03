@@ -36,6 +36,7 @@ import io.seata.server.session.BranchSession;
 import io.seata.server.session.GlobalSession;
 import io.seata.server.session.SessionHelper;
 import io.seata.server.session.SessionHolder;
+import io.seata.server.transaction.at.ATCore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,19 +66,40 @@ public abstract class AbstractCore implements Core {
 
     public abstract BranchType getHandleBranchType();
 
+    /**
+     *  {@link ATCore#branchSessionLock}
+     *  首先确保全局事务会话为激活状态，状态为{@link GlobalStatus#Begin}
+     *  创建全局会话，AT模式：锁事务分支（即插入分支事务关联的行锁）
+     *  添加分支事务，针对AT模式，插入分支事务表
+     *
+     * @param branchType      the branch type
+     * @param resourceId      the resource id
+     * @param clientId        the client id
+     * @param xid             the xid
+     * @param applicationData the context
+     * @param lockKeys        the lock keys
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public Long branchRegister(BranchType branchType, String resourceId, String clientId, String xid,
                                String applicationData, String lockKeys) throws TransactionException {
+        //确保全局事务会话存在
         GlobalSession globalSession = assertGlobalSessionNotNull(xid, false);
         return SessionHolder.lockAndExecute(globalSession, () -> {
+//            检查当前全局事务会话为激活状态，状态为{@link GlobalStatus#Begin}
             globalSessionStatusCheck(globalSession);
             globalSession.addSessionLifecycleListener(SessionHolder.getRootSessionManager());
+            //创建全局会话
             BranchSession branchSession = SessionHelper.newBranchByGlobal(globalSession, branchType, resourceId,
                     applicationData, lockKeys, clientId);
+//          AT模式：添加分支事务锁（即插入分支事务关联的行锁）
             branchSessionLock(globalSession, branchSession);
             try {
+                //添加分支事务
                 globalSession.addBranch(branchSession);
             } catch (RuntimeException ex) {
+                //AT: 释放分支事务锁(即删除分支事务关联的行锁)
                 branchSessionUnlock(branchSession);
                 throw new BranchTransactionException(FailedToAddBranch, String
                         .format("Failed to store branch xid = %s branchId = %s", globalSession.getXid(),
@@ -91,6 +113,11 @@ public abstract class AbstractCore implements Core {
         });
     }
 
+    /**
+     * 检查当前全局事务会话为激活状态，状态为{@link GlobalStatus#Begin}
+     * @param globalSession
+     * @throws GlobalTransactionException
+     */
     protected void globalSessionStatusCheck(GlobalSession globalSession) throws GlobalTransactionException {
         if (!globalSession.isActive()) {
             throw new GlobalTransactionException(GlobalTransactionNotActive, String.format(
@@ -112,6 +139,13 @@ public abstract class AbstractCore implements Core {
 
     }
 
+    /**
+     * 确保全局事务会话存在
+     * @param xid
+     * @param withBranchSessions
+     * @return
+     * @throws TransactionException
+     */
     private GlobalSession assertGlobalSessionNotNull(String xid, boolean withBranchSessions)
             throws TransactionException {
         GlobalSession globalSession = SessionHolder.findGlobalSession(xid, withBranchSessions);
@@ -122,6 +156,15 @@ public abstract class AbstractCore implements Core {
         return globalSession;
     }
 
+    /**
+     * 更新分支状态
+     * @param branchType      the branch type
+     * @param xid             the xid
+     * @param branchId        the branch id
+     * @param status          the status
+     * @param applicationData the application data
+     * @throws TransactionException
+     */
     @Override
     public void branchReport(BranchType branchType, String xid, long branchId, BranchStatus status,
                              String applicationData) throws TransactionException {

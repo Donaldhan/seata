@@ -37,12 +37,20 @@ public class XACore extends AbstractCore {
         return BranchType.XA;
     }
 
+    /**
+     * @param branchType      the branch type
+     * @param xid             the xid
+     * @param branchId        the branch id
+     * @param status          the status
+     * @param applicationData the application data
+     * @throws TransactionException
+     */
     @Override
     public void branchReport(BranchType branchType, String xid, long branchId, BranchStatus status,
                              String applicationData) throws TransactionException {
         super.branchReport(branchType, xid, branchId, status, applicationData);
         if (BranchStatus.PhaseOne_Failed == status) {
-
+          //do nothing
         }
     }
 }

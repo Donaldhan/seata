@@ -78,6 +78,13 @@ public class ProtocolV1Decoder extends LengthFieldBasedFrameDecoder {
         super(maxFrameLength, 3, 4, -7, 0);
     }
 
+    /**
+     * 协议魔数+协议版本+总长度（head+body）+消息类型+消息编码器+消息压缩器+消息id+头部+body
+     * @param ctx
+     * @param in
+     * @return
+     * @throws Exception
+     */
     @Override
     protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
         Object decoded = super.decode(ctx, in);

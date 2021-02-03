@@ -44,6 +44,16 @@ public class NettyRemotingServer extends AbstractNettyRemotingServer {
 
     private final AtomicBoolean initialized = new AtomicBoolean(false);
 
+    /**
+     * 注册请求处理器，启动NettyServer
+     *
+     * {@link ServerOnRequestProcessor}
+     * {@link ServerOnResponseProcessor}
+     * {@link RegRmProcessor}
+     * {@link RegTmProcessor}
+     * {@link ServerHeartbeatProcessor}
+     *
+     */
     @Override
     public void init() {
         // registry processor
@@ -84,6 +94,13 @@ public class NettyRemotingServer extends AbstractNettyRemotingServer {
         channel.close();
     }
 
+    /**
+     * {@link ServerOnRequestProcessor}
+     * {@link ServerOnResponseProcessor}
+     * {@link RegRmProcessor}
+     * {@link RegTmProcessor}
+     * {@link ServerHeartbeatProcessor}
+     */
     private void registerProcessor() {
         // 1. registry on request message processor
         ServerOnRequestProcessor onRequestProcessor =

@@ -82,9 +82,11 @@ public class Server {
         UUIDGenerator.init(parameterParser.getServerNode());
         //log store mode : file, db, redis 初始化存储模式
         SessionHolder.init(parameterParser.getStoreMode());
-        //默认事务协调器 TODO
+        //默认事务协调器
         DefaultCoordinator coordinator = new DefaultCoordinator(nettyRemotingServer);
+        //调度处理回滚、重试、异步全局事务事务，删除undo log
         coordinator.init();
+        //设置事务消息处理器TransactionMessageHandler
         nettyRemotingServer.setHandler(coordinator);
         // register ShutdownHook
         ShutdownHook.getInstance().addDisposable(coordinator);
@@ -99,6 +101,7 @@ public class Server {
         XID.setPort(nettyRemotingServer.getListenPort());
 
         try {
+            //注册请求处理，启动NettyServer
             nettyRemotingServer.init();
         } catch (Throwable e) {
             logger.error("nettyServer init error:{}", e.getMessage(), e);

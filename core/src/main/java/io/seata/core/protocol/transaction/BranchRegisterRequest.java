@@ -26,14 +26,30 @@ import io.seata.core.rpc.RpcContext;
  */
 public class BranchRegisterRequest extends AbstractTransactionRequestToTC  {
 
+    private static final long serialVersionUID = 1862080305092073395L;
+    /**
+     *
+     */
     private String xid;
 
+    /**
+     *
+     */
     private BranchType branchType = BranchType.AT;
 
+    /**
+     *
+     */
     private String resourceId;
 
+    /**
+     *
+     */
     private String lockKey;
 
+    /**
+     *
+     */
     private String applicationData;
 
     /**

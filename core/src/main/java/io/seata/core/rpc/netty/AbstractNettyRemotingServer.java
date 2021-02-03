@@ -49,12 +49,20 @@ public abstract class AbstractNettyRemotingServer extends AbstractNettyRemoting 
 
     private final NettyServerBootstrap serverBootstrap;
 
+    /**
+     *
+     */
     @Override
     public void init() {
         super.init();
         serverBootstrap.start();
     }
 
+    /**
+     * @see ServerHandler
+     * @param messageExecutor
+     * @param nettyServerConfig
+     */
     public AbstractNettyRemotingServer(ThreadPoolExecutor messageExecutor, NettyServerConfig nettyServerConfig) {
         super(messageExecutor);
         serverBootstrap = new NettyServerBootstrap(nettyServerConfig);
