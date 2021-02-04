@@ -61,6 +61,11 @@ public final class TransactionInfo implements Serializable {
         this.rollbackRules = rollbackRules;
     }
 
+    /**
+     * 异常发生，是否回滚次异常
+     * @param ex
+     * @return
+     */
     public boolean rollbackOn(Throwable ex) {
 
         RollbackRule winner = null;

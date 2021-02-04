@@ -17,20 +17,22 @@ package io.seata.tm.api;
 
 /**
  * Role of current thread involve in a global transaction.
- *
+ * 全局事务角色
  * @author sharajava
  */
 public enum GlobalTransactionRole {
 
     /**
      * The Launcher.
+     * The one begins the current global transaction.
+     * 开始当前全局事务
      */
-    // The one begins the current global transaction.
     Launcher,
 
     /**
      * The Participant.
+     * The one just joins into a existing global transaction.
+     * 加入已经存在的全局事务
      */
-    // The one just joins into a existing global transaction.
     Participant
 }

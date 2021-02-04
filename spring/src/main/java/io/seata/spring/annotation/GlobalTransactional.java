@@ -91,6 +91,7 @@ public @interface GlobalTransactional {
 
     /**
      * the propagation of the global transaction
+     * 默认：如果当前事物存在，则在当前事务下执行，否则创建一个新的事务
      * @return
      */
     Propagation propagation() default Propagation.REQUIRED;

@@ -75,7 +75,7 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
     private static final int DEFAULT_MODE = AT_MODE + MT_MODE;
 
     /**
-     *
+     * 代理bean
      */
     private static final Set<String> PROXYED_SET = new HashSet<>();
 
@@ -241,6 +241,10 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
 
     /**
      * The following will be scanned, and added corresponding interceptor:
+     *
+     * AbstractAutoProxyCreator创建AOP代理：https://gorden5566.com/post/1052.html
+     *
+     *
      * AOP 包装
      * 添加相关的拦截器
      * TM:
@@ -298,6 +302,7 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
                 if (!AopUtils.isAopProxy(bean)) {
                     bean = super.wrapIfNecessary(bean, beanName, cacheKey);
                 } else {
+                    //AOP
                     AdvisedSupport advised = SpringProxyUtils.getAdvisedSupport(bean);
                     Advisor[] advisor = buildAdvisors(beanName, getAdvicesAndAdvisorsForBean(null, null, null));
                     for (Advisor avr : advisor) {
@@ -312,6 +317,10 @@ public class GlobalTransactionScanner extends AbstractAutoProxyCreator
         }
     }
 
+    /**
+     * @param classes
+     * @return
+     */
     private boolean existsAnnotation(Class<?>[] classes) {
         if (CollectionUtils.isNotEmpty(classes)) {
             for (Class<?> clazz : classes) {

@@ -87,6 +87,9 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
 
     private static int defaultGlobalTransactionTimeout = 0;
 
+    /**
+     * 初始化全局事务超时时间
+     */
     private void initDefaultGlobalTransactionTimeout() {
         if (GlobalTransactionalInterceptor.defaultGlobalTransactionTimeout <= 0) {
             int defaultGlobalTransactionTimeout;
@@ -121,6 +124,7 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
         degradeCheck = ConfigurationFactory.getInstance().getBoolean(ConfigurationKeys.CLIENT_DEGRADE_CHECK,
             DEFAULT_TM_DEGRADE_CHECK);
         if (degradeCheck) {
+            //降级检查
             ConfigurationCache.addConfigListener(ConfigurationKeys.CLIENT_DEGRADE_CHECK, this);
             degradeCheckPeriod = ConfigurationFactory.getInstance().getInt(
                 ConfigurationKeys.CLIENT_DEGRADE_CHECK_PERIOD, DEFAULT_TM_DEGRADE_CHECK_PERIOD);
@@ -200,6 +204,7 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
         final GlobalTransactional globalTrxAnno) throws Throwable {
         boolean succeed = true;
         try {
+            //执行全局事务
             return transactionalTemplate.execute(new TransactionalExecutor() {
                 @Override
                 public Object execute() throws Throwable {
@@ -221,13 +226,14 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
                     if (timeout <= 0 || timeout == DEFAULT_GLOBAL_TRANSACTION_TIMEOUT) {
                         timeout = defaultGlobalTransactionTimeout;
                     }
-
+                    //全局事务信息
                     TransactionInfo transactionInfo = new TransactionInfo();
                     transactionInfo.setTimeOut(timeout);
                     transactionInfo.setName(name());
                     transactionInfo.setPropagation(globalTrxAnno.propagation());
                     transactionInfo.setLockRetryInternal(globalTrxAnno.lockRetryInternal());
                     transactionInfo.setLockRetryTimes(globalTrxAnno.lockRetryTimes());
+                    //回滚规则
                     Set<RollbackRule> rollbackRules = new LinkedHashSet<>();
                     for (Class<?> rbRule : globalTrxAnno.rollbackFor()) {
                         rollbackRules.add(new RollbackRule(rbRule));
@@ -320,6 +326,7 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
 
     /**
      * auto upgrade service detection
+     * 自动升级服务探测
      */
     private static void startDegradeCheck() {
         executor.scheduleAtFixedRate(() -> {

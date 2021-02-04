@@ -31,7 +31,7 @@ public class GlobalTransactionContext {
 
     /**
      * Try to create a new GlobalTransaction.
-     *
+     * 创建一个新的全局事务{@link GlobalTransactionRole#Launcher}
      * @return the new global transaction
      */
     public static GlobalTransaction createNew() {
@@ -40,7 +40,7 @@ public class GlobalTransactionContext {
 
     /**
      * Get GlobalTransaction instance bind on current thread.
-     *
+     * 获取绑定当前线程的全局事务
      * @return null if no transaction context there.
      */
     public static GlobalTransaction getCurrent() {
@@ -48,6 +48,7 @@ public class GlobalTransactionContext {
         if (xid == null) {
             return null;
         }
+        //全局事务参与者
         return new DefaultGlobalTransaction(xid, GlobalStatus.Begin, GlobalTransactionRole.Participant);
     }
 

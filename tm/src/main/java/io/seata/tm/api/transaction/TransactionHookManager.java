@@ -28,6 +28,9 @@ public final class TransactionHookManager {
 
     }
 
+    /**
+     * 本地事务HOOKS
+     */
     private static final ThreadLocal<List<TransactionHook>> LOCAL_HOOKS = new ThreadLocal<>();
 
     /**

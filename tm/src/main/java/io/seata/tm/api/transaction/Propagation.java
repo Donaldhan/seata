@@ -19,7 +19,7 @@ import io.seata.tm.api.TransactionalExecutor;
 
 /**
  * Propagation level of global transactions.
- *
+ * 全部事务传播等级
  * @author haozhibei
  * @see io.seata.spring.annotation.GlobalTransactional#propagation() // TM annotation
  * @see io.seata.spring.annotation.GlobalTransactionalInterceptor#invoke(MethodInvocation) // the interceptor of TM
@@ -34,7 +34,7 @@ public enum Propagation {
      * If transaction is existing, execute with current transaction,
      * else execute with new transaction.
      * </p>
-     *
+     * 如果当前事物存在，则在当前事务下执行，否则创建一个新的事务
      * <p>
      * The logic is similar to the following code:
      * <code><pre>
@@ -62,7 +62,7 @@ public enum Propagation {
      * <p>
      * If transaction is existing, suspend it, and then execute business with new transaction.
      * </p>
-     *
+     * 存在事务，则中断，创建一个新的事务，执行业务
      * <p>
      * The logic is similar to the following code:
      * <code><pre>
@@ -95,7 +95,7 @@ public enum Propagation {
      * <p>
      * If transaction is existing, suspend it, and then execute business without transaction.
      * </p>
-     *
+     * 如果事务只存在，则中断， 然后直接在无事务环境中执行业务
      * <p>
      * The logic is similar to the following code:
      * <code><pre>
@@ -121,7 +121,7 @@ public enum Propagation {
      * If transaction is not existing, execute without global transaction,
      * else execute business with current transaction.
      * </p>
-     *
+     * 如果事务不存在，在无全局事务下，执行业务与，否则在当前事务下执行业务
      * <p>
      * The logic is similar to the following code:
      * <code><pre>
@@ -142,7 +142,7 @@ public enum Propagation {
      * If transaction is existing, throw exception,
      * else execute business without transaction.
      * </p>
-     *
+     * 如果存在事务，则抛出异常，否则非事务环境中，执行业务
      * <p>
      * The logic is similar to the following code:
      * <code><pre>
@@ -162,7 +162,7 @@ public enum Propagation {
      * If transaction is not existing, throw exception,
      * else execute business with current transaction.
      * </p>
-     *
+     * 事务不存在，则抛出异常，或者在当前事务环境下，执行事务
      * <p>
      * The logic is similar to the following code:
      * <code><pre>

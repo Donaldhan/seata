@@ -28,7 +28,7 @@ public interface GlobalTransaction {
 
     /**
      * Begin a new global transaction with default timeout and name.
-     *
+     * 开启一个全局事务
      * @throws TransactionException Any exception that fails this will be wrapped with TransactionException and thrown
      * out.
      */
@@ -36,7 +36,7 @@ public interface GlobalTransaction {
 
     /**
      * Begin a new global transaction with given timeout and default name.
-     *
+     * 开启一个给定超时时间的全局事务
      * @param timeout Global transaction timeout in MILLISECONDS
      * @throws TransactionException Any exception that fails this will be wrapped with TransactionException and thrown
      * out.
@@ -55,7 +55,7 @@ public interface GlobalTransaction {
 
     /**
      * Commit the global transaction.
-     *
+     * 提交全局事务
      * @throws TransactionException Any exception that fails this will be wrapped with TransactionException and thrown
      * out.
      */
@@ -63,7 +63,7 @@ public interface GlobalTransaction {
 
     /**
      * Rollback the global transaction.
-     *
+     * 回滚全局事务
      * @throws TransactionException Any exception that fails this will be wrapped with TransactionException and thrown
      * out.
      */
@@ -71,7 +71,7 @@ public interface GlobalTransaction {
 
     /**
      * Suspend the global transaction.
-     *
+     * 中断全局事务
      * @param unbindXid if true,suspend the global transaction.
      * @return the SuspendedResourcesHolder which holds the suspend resources
      * @throws TransactionException Any exception that fails this will be wrapped with TransactionException and thrown
@@ -81,7 +81,7 @@ public interface GlobalTransaction {
 
     /**
      * Resume the global transaction.
-     *
+     * 恢复全局事务
      * @param suspendedResourcesHolder the suspended resources to resume
      * @throws TransactionException Any exception that fails this will be wrapped with TransactionException and thrown
      * out.
@@ -91,7 +91,7 @@ public interface GlobalTransaction {
 
     /**
      * Ask TC for current status of the corresponding global transaction.
-     *
+     * 获取全局事务状态
      * @return Status of the corresponding global transaction.
      * @throws TransactionException Any exception that fails this will be wrapped with TransactionException and thrown
      * out.
@@ -108,7 +108,7 @@ public interface GlobalTransaction {
 
     /**
      * report the global transaction status.
-     *
+     * 报告全局事务状态
      * @param globalStatus global status.
      *
      * @throws TransactionException Any exception that fails this will be wrapped with TransactionException and thrown
@@ -118,7 +118,7 @@ public interface GlobalTransaction {
 
     /**
      * local status of the global transaction.
-     *
+     * 获取本地事务状态
      * @return Status of the corresponding global transaction.
      * @see GlobalStatus
      */

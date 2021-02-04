@@ -54,12 +54,14 @@ public class TransactionalTemplate {
             throw new ShouldNeverHappenException("transactionInfo does not exist");
         }
         // 1.1 Get current transaction, if not null, the tx role is 'GlobalTransactionRole.Participant'.
+        // 获取当前全局事务， 不为null，tx角色为全局事务参与者
         GlobalTransaction tx = GlobalTransactionContext.getCurrent();
 
         // 1.2 Handle the transaction propagation.
         Propagation propagation = txInfo.getPropagation();
         SuspendedResourcesHolder suspendedResourcesHolder = null;
         try {
+            //不同事务传播等级下的，业务处理逻辑
             switch (propagation) {
                 case NOT_SUPPORTED:
                     // If transaction is existing, suspend it.
@@ -109,54 +111,75 @@ public class TransactionalTemplate {
             }
 
             // 1.3 If null, create new transaction with role 'GlobalTransactionRole.Launcher'.
+            //开启一个全局事务
             if (tx == null) {
                 tx = GlobalTransactionContext.createNew();
             }
 
-            // set current tx config to holder
+            // set current tx config to holder，  更新全局锁配置，并返回老的配置
             GlobalLockConfig previousConfig = replaceGlobalLockConfig(txInfo);
 
             try {
                 // 2. If the tx role is 'GlobalTransactionRole.Launcher', send the request of beginTransaction to TC,
                 //    else do nothing. Of course, the hooks will still be triggered.
+                //全局事务发起者（GlobalTransactionRole.Launcher），开一个全局事务, 否则do nothing
                 beginTransaction(txInfo, tx);
 
                 Object rs;
                 try {
-                    // Do Your Business
+                    // Do Your Business， 执行当前业务逻辑
                     rs = business.execute();
                 } catch (Throwable ex) {
                     // 3. The needed business exception to rollback.
+                    // 异常发行，需要回滚异常，则回滚，否则提交事务
                     completeTransactionAfterThrowing(txInfo, tx, ex);
                     throw ex;
                 }
 
                 // 4. everything is fine, commit.
+                //提交事务
                 commitTransaction(tx);
 
                 return rs;
             } finally {
                 //5. clear
+                //恢复全局事务锁
                 resumeGlobalLockConfig(previousConfig);
+                //触发事务完成Hook
                 triggerAfterCompletion();
+                //清除事务Hook
                 cleanUp();
             }
         } finally {
             // If the transaction is suspended, resume it.
             if (suspendedResourcesHolder != null) {
+                //恢复事务
                 tx.resume(suspendedResourcesHolder);
             }
         }
     }
 
+    /**
+     * @param tx
+     * @return
+     */
     private boolean existingTransaction(GlobalTransaction tx) {
         return tx != null;
     }
 
+    /**
+     * @param tx
+     * @return
+     */
     private boolean notExistingTransaction(GlobalTransaction tx) {
         return tx == null;
     }
 
+    /**
+     * 更新全局锁配置，并返回老的配置
+     * @param info
+     * @return
+     */
     private GlobalLockConfig replaceGlobalLockConfig(TransactionInfo info) {
         GlobalLockConfig myConfig = new GlobalLockConfig();
         myConfig.setLockRetryInternal(info.getLockRetryInternal());
@@ -172,6 +195,14 @@ public class TransactionalTemplate {
         }
     }
 
+    /**
+     * 异常处理事务；
+     * 如果异常需要回滚，则回滚；否则提交事务
+     * @param txInfo
+     * @param tx
+     * @param originalException
+     * @throws TransactionalExecutor.ExecutionException
+     */
     private void completeTransactionAfterThrowing(TransactionInfo txInfo, GlobalTransaction tx, Throwable originalException) throws TransactionalExecutor.ExecutionException {
         //roll back
         if (txInfo != null && txInfo.rollbackOn(originalException)) {
@@ -183,11 +214,17 @@ public class TransactionalTemplate {
                         TransactionalExecutor.Code.RollbackFailure, originalException);
             }
         } else {
-            // not roll back on this exception, so commit
+            // not roll back on this exception, so commit，
+            // 此异常忽略，直接提交
             commitTransaction(tx);
         }
     }
 
+    /**
+     * 提交事务
+     * @param tx
+     * @throws TransactionalExecutor.ExecutionException
+     */
     private void commitTransaction(GlobalTransaction tx) throws TransactionalExecutor.ExecutionException {
         try {
             triggerBeforeCommit();
@@ -200,6 +237,13 @@ public class TransactionalTemplate {
         }
     }
 
+    /**
+     * 触发全局事务回滚
+     * @param tx
+     * @param originalException
+     * @throws TransactionException
+     * @throws TransactionalExecutor.ExecutionException
+     */
     private void rollbackTransaction(GlobalTransaction tx, Throwable originalException) throws TransactionException, TransactionalExecutor.ExecutionException {
         triggerBeforeRollback();
         tx.rollback();
@@ -209,6 +253,12 @@ public class TransactionalTemplate {
             ? TransactionalExecutor.Code.RollbackRetrying : TransactionalExecutor.Code.RollbackDone, originalException);
     }
 
+    /**
+     * 全局事务发起者，开一个全局事务
+     * @param txInfo
+     * @param tx
+     * @throws TransactionalExecutor.ExecutionException
+     */
     private void beginTransaction(TransactionInfo txInfo, GlobalTransaction tx) throws TransactionalExecutor.ExecutionException {
         try {
             triggerBeforeBegin();
@@ -221,6 +271,9 @@ public class TransactionalTemplate {
         }
     }
 
+    /**
+     * 触发事务开始Before Hook
+     */
     private void triggerBeforeBegin() {
         for (TransactionHook hook : getCurrentHooks()) {
             try {
@@ -231,6 +284,9 @@ public class TransactionalTemplate {
         }
     }
 
+    /**
+     *触发事务开始After Hook
+     */
     private void triggerAfterBegin() {
         for (TransactionHook hook : getCurrentHooks()) {
             try {
@@ -241,6 +297,9 @@ public class TransactionalTemplate {
         }
     }
 
+    /**
+     *
+     */
     private void triggerBeforeRollback() {
         for (TransactionHook hook : getCurrentHooks()) {
             try {
@@ -251,6 +310,9 @@ public class TransactionalTemplate {
         }
     }
 
+    /**
+     *
+     */
     private void triggerAfterRollback() {
         for (TransactionHook hook : getCurrentHooks()) {
             try {
@@ -261,6 +323,9 @@ public class TransactionalTemplate {
         }
     }
 
+    /**
+     *
+     */
     private void triggerBeforeCommit() {
         for (TransactionHook hook : getCurrentHooks()) {
             try {
@@ -271,6 +336,9 @@ public class TransactionalTemplate {
         }
     }
 
+    /**
+     *
+     */
     private void triggerAfterCommit() {
         for (TransactionHook hook : getCurrentHooks()) {
             try {
@@ -281,6 +349,9 @@ public class TransactionalTemplate {
         }
     }
 
+    /**
+     *
+     */
     private void triggerAfterCompletion() {
         for (TransactionHook hook : getCurrentHooks()) {
             try {
@@ -291,6 +362,9 @@ public class TransactionalTemplate {
         }
     }
 
+    /**
+     * 清除事务Hook
+     */
     private void cleanUp() {
         TransactionHookManager.clear();
     }

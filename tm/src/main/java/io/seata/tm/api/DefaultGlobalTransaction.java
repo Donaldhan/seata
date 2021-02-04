@@ -87,6 +87,12 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
         begin(timeout, DEFAULT_GLOBAL_TX_NAME);
     }
 
+    /**
+     * 全局事务发起者，开一个全局事务
+     * @param timeout Given timeout in MILLISECONDS.
+     * @param name    Given name.
+     * @throws TransactionException
+     */
     @Override
     public void begin(int timeout, String name) throws TransactionException {
         if (role != GlobalTransactionRole.Launcher) {
@@ -114,6 +120,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
     public void commit() throws TransactionException {
         if (role == GlobalTransactionRole.Participant) {
             // Participant has no responsibility of committing
+            //参与者不处理
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Ignore Commit(): just involved in global transaction [{}]", xid);
             }
@@ -124,6 +131,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
         try {
             while (retry > 0) {
                 try {
+                    //尝试提交
                     status = transactionManager.commit(xid);
                     break;
                 } catch (Throwable ex) {
@@ -144,10 +152,14 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
         }
     }
 
+    /**
+     * @throws TransactionException
+     */
     @Override
     public void rollback() throws TransactionException {
         if (role == GlobalTransactionRole.Participant) {
             // Participant has no responsibility of rollback
+            //参与者不处理
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Ignore Rollback(): just involved in global transaction [{}]", xid);
             }
@@ -157,6 +169,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
 
         int retry = ROLLBACK_RETRY_COUNT <= 0 ? DEFAULT_TM_ROLLBACK_RETRY_COUNT : ROLLBACK_RETRY_COUNT;
         try {
+            //尝试回滚
             while (retry > 0) {
                 try {
                     status = transactionManager.rollback(xid);
@@ -171,6 +184,7 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
             }
         } finally {
             if (xid.equals(RootContext.getXID())) {
+                //终端事务
                 suspend();
             }
         }
@@ -179,6 +193,11 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
         }
     }
 
+    /**
+     * 中断事务
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public SuspendedResourcesHolder suspend() throws TransactionException {
         String xid = RootContext.unbind();
@@ -192,6 +211,11 @@ public class DefaultGlobalTransaction implements GlobalTransaction {
         }
     }
 
+    /**
+     * 重新绑定XID
+     * @param suspendedResourcesHolder the suspended resources to resume
+     * @throws TransactionException
+     */
     @Override
     public void resume(SuspendedResourcesHolder suspendedResourcesHolder) throws TransactionException {
         if (suspendedResourcesHolder == null) {
