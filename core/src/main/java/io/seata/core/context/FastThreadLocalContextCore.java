@@ -23,7 +23,7 @@ import java.util.Map;
 
 /**
  * The type Fast Thread local context core.
- *
+ *  快速本地线程上下文
  * @author ph3636
  */
 @LoadLevel(name = "FastThreadLocalContextCore", order = Integer.MIN_VALUE + 1)

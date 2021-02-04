@@ -42,20 +42,30 @@ public class RootContext {
 
     /**
      * The constant KEY_XID.
+     * 全局事务id Key
      */
     public static final String KEY_XID = "TX_XID";
 
     /**
      * The constant KEY_BRANCH_TYPE
+     * 分支事务类型KEy
      */
     public static final String KEY_BRANCH_TYPE = "TX_BRANCH_TYPE";
 
     /**
-     * The constant KEY_GLOBAL_LOCK_FLAG, VALUE_GLOBAL_LOCK_FLAG
+     * The constant KEY_GLOBAL_LOCK_FLAG,
+     * 全局事务锁key
+     *
      */
     public static final String KEY_GLOBAL_LOCK_FLAG = "TX_LOCK";
+    /**
+     * VALUE_GLOBAL_LOCK_FLAG
+     */
     public static final Boolean VALUE_GLOBAL_LOCK_FLAG = true;
 
+    /**
+     *
+     */
     private static ContextCore CONTEXT_HOLDER = ContextCoreLoader.load();
 
     private static BranchType DEFAULT_BRANCH_TYPE;

@@ -19,14 +19,14 @@ import io.seata.tm.api.transaction.TransactionInfo;
 
 /**
  * Callback for executing business logic in a global transaction.
- *
+ * 在全局事务中，执行业务逻辑
  * @author sharajava
  */
 public interface TransactionalExecutor {
 
     /**
      * Execute the business logic here.
-     *
+     * 执行业务逻辑
      * @return What the business logic returns.
      * @throws Throwable Any throwable during executing.
      */
@@ -34,6 +34,7 @@ public interface TransactionalExecutor {
 
     /**
      * transaction conf or other attr
+     * 事务配置
      * @return
      */
     TransactionInfo getTransactionInfo();
@@ -46,38 +47,38 @@ public interface TransactionalExecutor {
 
         /**
          * Begin failure code.
+         * 开始失败
          */
         //
         BeginFailure,
 
         /**
          * Commit failure code.
+         * 提交失败
          */
-        //
         CommitFailure,
 
         /**
          * Rollback failure code.
+         * 回滚失败
          */
-        //
         RollbackFailure,
 
         /**
          * Rollback done code.
+         * 回滚成功
          */
-        //
         RollbackDone,
 
         /**
          * Report failure code.
+         * 报告事务状态失败
          */
-        //
         ReportFailure,
 
         /**
          * Rollback retrying code.
          */
-        //
         RollbackRetrying
     }
 

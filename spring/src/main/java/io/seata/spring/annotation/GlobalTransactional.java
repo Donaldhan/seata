@@ -29,10 +29,21 @@ import org.aopalliance.intercept.MethodInvocation;
  * The interface Global transactional.
  *
  * @author slievrly
- * @see io.seata.spring.annotation.GlobalTransactionScanner#wrapIfNecessary(Object, String, Object) // the scanner for TM, GlobalLock, and TCC mode
- * @see io.seata.spring.annotation.GlobalTransactionalInterceptor#handleGlobalTransaction(MethodInvocation, GlobalTransactional)  // TM: the interceptor of TM
- * @see io.seata.spring.annotation.datasource.SeataAutoDataSourceProxyAdvice#invoke(MethodInvocation) // RM: the interceptor of GlobalLockLogic and AT/XA mode
- * @see io.seata.spring.tcc.TccActionInterceptor#invoke(MethodInvocation) // RM: the interceptor of TCC mode
+ * // the scanner for TM, GlobalLock, and TCC mode
+ * Tm ，全局锁， TCC 模式
+ * @see io.seata.spring.annotation.GlobalTransactionScanner#wrapIfNecessary(Object, String, Object)
+ *
+ * // TM: the interceptor of TM
+ * TM 全局事务拦截器
+ * @see io.seata.spring.annotation.GlobalTransactionalInterceptor#handleGlobalTransaction(MethodInvocation, GlobalTransactional)
+ *
+ * // RM: the interceptor of GlobalLockLogic and AT/XA mode
+ * RM： GlobalLockLogic， AT/XA模式拦截器
+ * @see io.seata.spring.annotation.datasource.SeataAutoDataSourceProxyAdvice#invoke(MethodInvocation)
+ *
+ * // RM: the interceptor of TCC mode
+ * RM： TCC模式拦截器
+ * @see io.seata.spring.tcc.TccActionInterceptor#invoke(MethodInvocation)
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD,ElementType.TYPE})

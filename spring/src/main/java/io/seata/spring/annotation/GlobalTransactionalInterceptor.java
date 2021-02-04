@@ -134,6 +134,12 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
         this.initDefaultGlobalTransactionTimeout();
     }
 
+    /**
+     * 方法及拦截
+     * @param methodInvocation
+     * @return
+     * @throws Throwable
+     */
     @Override
     public Object invoke(final MethodInvocation methodInvocation) throws Throwable {
         Class<?> targetClass =
@@ -147,8 +153,10 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
             boolean localDisable = disable || (degradeCheck && degradeNum >= degradeCheckAllowTimes);
             if (!localDisable) {
                 if (globalTransactionalAnnotation != null) {
+                    //全局事务拦截器
                     return handleGlobalTransaction(methodInvocation, globalTransactionalAnnotation);
                 } else if (globalLockAnnotation != null) {
+                    //处理全局事务锁
                     return handleGlobalLock(methodInvocation, globalLockAnnotation);
                 }
             }
@@ -156,6 +164,13 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
         return methodInvocation.proceed();
     }
 
+    /**
+     * 处理全局锁
+     * @param methodInvocation
+     * @param globalLockAnno
+     * @return
+     * @throws Throwable
+     */
     Object handleGlobalLock(final MethodInvocation methodInvocation,
         final GlobalLock globalLockAnno) throws Throwable {
         return globalLockTemplate.execute(new GlobalLockExecutor() {
@@ -174,6 +189,13 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
         });
     }
 
+    /**
+     * 处理全局事务
+     * @param methodInvocation
+     * @param globalTrxAnno
+     * @return
+     * @throws Throwable
+     */
     Object handleGlobalTransaction(final MethodInvocation methodInvocation,
         final GlobalTransactional globalTrxAnno) throws Throwable {
         boolean succeed = true;
@@ -252,11 +274,22 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
         }
     }
 
+    /**
+     * @param method
+     * @param targetClass
+     * @param annotationClass
+     * @param <T>
+     * @return
+     */
     public <T extends Annotation> T getAnnotation(Method method, Class<?> targetClass, Class<T> annotationClass) {
         return Optional.ofNullable(method).map(m -> m.getAnnotation(annotationClass))
             .orElse(Optional.ofNullable(targetClass).map(t -> t.getAnnotation(annotationClass)).orElse(null));
     }
 
+    /**
+     * @param method
+     * @return
+     */
     private String formatMethod(Method method) {
         StringBuilder sb = new StringBuilder(method.getName()).append("(");
 
@@ -302,6 +335,9 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
         }, degradeCheckPeriod, degradeCheckPeriod, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * @param event
+     */
     @Subscribe
     public static void onDegradeCheck(DegradeCheckEvent event) {
         if (event.isRequestSuccess()) {

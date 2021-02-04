@@ -27,11 +27,12 @@ import org.aopalliance.intercept.MethodInvocation;
  * declare the transaction only execute in single local RM,<br/>
  * but the transaction need to ensure records to update(or select for update) is not in global transaction middle
  * stage<br/>
- *
+ * 在单个本地RM中，声明事务， 但事务需要记录
  * use this annotation instead of GlobalTransaction in the situation mentioned above will help performance.
+ * 使用GlobalTransaction，可以在上面情况下提高性能
  *
  * @see io.seata.spring.annotation.GlobalTransactionScanner#wrapIfNecessary(Object, String, Object) // the scanner for TM, GlobalLock, and TCC mode
- * @see io.seata.spring.annotation.GlobalTransactionalInterceptor#handleGlobalLock(MethodInvocation) // the interceptor of GlobalLock
+ * @see io.seata.spring.annotation.GlobalTransactionalInterceptor#handleGlobalLock(MethodInvocation, GlobalLock)  // the interceptor of GlobalLock
  * @see io.seata.spring.annotation.datasource.SeataAutoDataSourceProxyAdvice#invoke(MethodInvocation) // the interceptor of GlobalLockLogic and AT/XA mode
  */
 @Retention(RetentionPolicy.RUNTIME)
