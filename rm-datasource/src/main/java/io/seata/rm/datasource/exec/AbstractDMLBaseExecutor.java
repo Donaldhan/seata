@@ -75,19 +75,26 @@ public abstract class AbstractDMLBaseExecutor<T, S extends Statement> extends Ba
         super(statementProxy, statementCallback, sqlRecognizers);
     }
 
+    /**
+     * @param args the args
+     * @return
+     * @throws Throwable
+     */
     @Override
     public T doExecute(Object... args) throws Throwable {
         AbstractConnectionProxy connectionProxy = statementProxy.getConnectionProxy();
         if (connectionProxy.getAutoCommit()) {
+            //自动提交
             return executeAutoCommitTrue(args);
         } else {
+            //非自动提交
             return executeAutoCommitFalse(args);
         }
     }
 
     /**
      * Execute auto commit false t.
-     *
+     * 执行非自动提交
      * @param args the args
      * @return the t
      * @throws Exception the exception
@@ -96,9 +103,13 @@ public abstract class AbstractDMLBaseExecutor<T, S extends Statement> extends Ba
         if (!JdbcConstants.MYSQL.equalsIgnoreCase(getDbType()) && isMultiPk()) {
             throw new NotSupportYetException("multi pk only support mysql!");
         }
+        //创建数据前镜像
         TableRecords beforeImage = beforeImage();
+        //执行Statement
         T result = statementCallback.execute(statementProxy.getTargetStatement(), args);
+        //创建数据后镜像
         TableRecords afterImage = afterImage(beforeImage);
+        //根据数据前后镜像，构建UndoLog
         prepareUndoLog(beforeImage, afterImage);
         return result;
     }
@@ -135,9 +146,12 @@ public abstract class AbstractDMLBaseExecutor<T, S extends Statement> extends Ba
     protected T executeAutoCommitTrue(Object[] args) throws Throwable {
         ConnectionProxy connectionProxy = statementProxy.getConnectionProxy();
         try {
+            //先false
             connectionProxy.setAutoCommit(false);
             return new LockRetryPolicy(connectionProxy).execute(() -> {
+                //执行非自动提交
                 T result = executeAutoCommitFalse(args);
+                //手动提交
                 connectionProxy.commit();
                 return result;
             });

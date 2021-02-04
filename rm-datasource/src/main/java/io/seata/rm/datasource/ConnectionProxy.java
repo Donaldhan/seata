@@ -40,7 +40,7 @@ import static io.seata.common.DefaultValues.DEFAULT_CLIENT_REPORT_SUCCESS_ENABLE
 
 /**
  * The type Connection proxy.
- *
+ * 数据库连接代理
  * @author sharajava
  */
 public class ConnectionProxy extends AbstractConnectionProxy {
@@ -49,9 +49,15 @@ public class ConnectionProxy extends AbstractConnectionProxy {
 
     private ConnectionContext context = new ConnectionContext();
 
+    /**
+     * 报告尝试次数
+     */
     private static final int REPORT_RETRY_COUNT = ConfigurationFactory.getInstance().getInt(
         ConfigurationKeys.CLIENT_REPORT_RETRY_COUNT, DEFAULT_CLIENT_REPORT_RETRY_COUNT);
 
+    /**
+     * 是否报告成功状态
+     */
     public static final boolean IS_REPORT_SUCCESS_ENABLE = ConfigurationFactory.getInstance().getBoolean(
         ConfigurationKeys.CLIENT_REPORT_SUCCESS_ENABLE, DEFAULT_CLIENT_REPORT_SUCCESS_ENABLE);
 
@@ -78,6 +84,7 @@ public class ConnectionProxy extends AbstractConnectionProxy {
 
     /**
      * Bind.
+     * 绑定全局事务Xid
      *
      * @param xid the xid
      */
@@ -87,7 +94,7 @@ public class ConnectionProxy extends AbstractConnectionProxy {
 
     /**
      * set global lock requires flag
-     *
+     * 是否需要获取全局锁
      * @param isLock whether to lock
      */
     public void setGlobalLockRequire(boolean isLock) {
@@ -103,7 +110,7 @@ public class ConnectionProxy extends AbstractConnectionProxy {
 
     /**
      * Check lock.
-     *
+     * 检查全局锁
      * @param lockKeys the lockKeys
      * @throws SQLException the sql exception
      */
@@ -125,7 +132,7 @@ public class ConnectionProxy extends AbstractConnectionProxy {
 
     /**
      * Lock query.
-     *
+     * 全局锁查询
      * @param lockKeys the lock keys
      * @throws SQLException the sql exception
      */
@@ -145,8 +152,14 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         recognizeLockKeyConflictException(te, null);
     }
 
+    /**
+     * @param te
+     * @param lockKeys
+     * @throws SQLException
+     */
     private void recognizeLockKeyConflictException(TransactionException te, String lockKeys) throws SQLException {
         if (te.getCode() == TransactionExceptionCode.LockKeyConflict) {
+            //锁冲突
             StringBuilder reasonBuilder = new StringBuilder("get global lock fail, xid:");
             reasonBuilder.append(context.getXid());
             if (StringUtils.isNotBlank(lockKeys)) {
@@ -177,6 +190,10 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         context.appendLockKey(lockKey);
     }
 
+    /**
+     * 提交事务分支
+     * @throws SQLException
+     */
     @Override
     public void commit() throws SQLException {
         try {
@@ -194,16 +211,25 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         }
     }
 
+    /**
+     * @throws SQLException
+     */
     private void doCommit() throws SQLException {
         if (context.inGlobalTransaction()) {
+            //在全局事务中提交分支事务
             processGlobalTransactionCommit();
         } else if (context.isGlobalLockRequire()) {
             processLocalCommitWithGlobalLocks();
         } else {
+            //直接提交
             targetConnection.commit();
         }
     }
 
+    /**
+     * 在全局锁的情况下执行提交
+     * @throws SQLException
+     */
     private void processLocalCommitWithGlobalLocks() throws SQLException {
         checkLock(context.buildLockKeys());
         try {
@@ -214,14 +240,25 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         context.reset();
     }
 
+    /**
+     * 处理全局事务提交
+     * 1. 注册事务分支
+     * 2. 刷盘分支事务undo log（落库，持久化）
+     * 3. 提交SQL
+     * 4. 报告事务分支状态（BranchStatus.PhaseOne_Done， BranchStatus.PhaseOne_Failed）
+     * @throws SQLException
+     */
     private void processGlobalTransactionCommit() throws SQLException {
         try {
+            //注册事务分支
             register();
         } catch (TransactionException e) {
             recognizeLockKeyConflictException(e, context.buildLockKeys());
         }
         try {
+            //刷盘分支事务undo log（落库，持久化）
             UndoLogManagerFactory.getUndoLogManager(this.getDbType()).flushUndoLogs(this);
+            //提交SQL
             targetConnection.commit();
         } catch (Throwable ex) {
             LOGGER.error("process connectionProxy commit error: {}", ex.getMessage(), ex);
@@ -229,11 +266,17 @@ public class ConnectionProxy extends AbstractConnectionProxy {
             throw new SQLException(ex);
         }
         if (IS_REPORT_SUCCESS_ENABLE) {
+            //报告事务分支状态
             report(true);
         }
+        //清除连接上下文
         context.reset();
     }
 
+    /**
+     * 注册
+     * @throws TransactionException
+     */
     private void register() throws TransactionException {
         if (!context.hasUndoLog() || context.getLockKeysBuffer().isEmpty()) {
             return;
@@ -243,8 +286,13 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         context.setBranchId(branchId);
     }
 
+    /**
+     * 回滚
+     * @throws SQLException
+     */
     @Override
     public void rollback() throws SQLException {
+        //回滚当前事物
         targetConnection.rollback();
         if (context.inGlobalTransaction() && context.isBranchRegistered()) {
             report(false);
@@ -252,15 +300,27 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         context.reset();
     }
 
+    /**
+     * 自动提交
+     * @param autoCommit
+     * @throws SQLException
+     */
     @Override
     public void setAutoCommit(boolean autoCommit) throws SQLException {
         if ((context.inGlobalTransaction() || context.isGlobalLockRequire()) && autoCommit && !getAutoCommit()) {
             // change autocommit from false to true, we should commit() first according to JDBC spec.
+            // 处在全局事务下
             doCommit();
         }
+        //自动提交
         targetConnection.setAutoCommit(autoCommit);
     }
 
+    /**
+     * 报告事务状态
+     * @param commitDone
+     * @throws SQLException
+     */
     private void report(boolean commitDone) throws SQLException {
         if (context.getBranchId() == null) {
             return;

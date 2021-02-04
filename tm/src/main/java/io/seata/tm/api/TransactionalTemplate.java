@@ -42,7 +42,7 @@ public class TransactionalTemplate {
 
     /**
      * Execute object.
-     *
+     * 执行事务
      * @param business the business
      * @return the object
      * @throws TransactionalExecutor.ExecutionException the execution exception
@@ -61,7 +61,7 @@ public class TransactionalTemplate {
         Propagation propagation = txInfo.getPropagation();
         SuspendedResourcesHolder suspendedResourcesHolder = null;
         try {
-            //不同事务传播等级下的，业务处理逻辑
+            //不同事务传播等级下的，业务处理逻辑， 处理事务嵌事务的情况
             switch (propagation) {
                 case NOT_SUPPORTED:
                     // If transaction is existing, suspend it.

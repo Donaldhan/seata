@@ -20,6 +20,7 @@ import io.seata.common.util.CollectionUtils;
 import io.seata.core.context.RootContext;
 import io.seata.core.model.BranchType;
 import io.seata.rm.datasource.StatementProxy;
+import io.seata.rm.datasource.exec.mysql.MySQLInsertExecutor;
 import io.seata.rm.datasource.sql.SQLVisitorFactory;
 import io.seata.sqlparser.SQLRecognizer;
 import java.sql.SQLException;
@@ -52,7 +53,7 @@ public class ExecuteTemplate {
 
     /**
      * Execute t.
-     *
+     * {@link MySQLInsertExecutor}
      * @param <T>               the type parameter
      * @param <S>               the type parameter
      * @param sqlRecognizers    the sql recognizer list
@@ -68,11 +69,13 @@ public class ExecuteTemplate {
                                                      Object... args) throws SQLException {
         if (!RootContext.requireGlobalLock() && BranchType.AT != RootContext.getBranchType()) {
             // Just work as original statement
+            //原始statement，直接实行
             return statementCallback.execute(statementProxy.getTargetStatement(), args);
         }
 
         String dbType = statementProxy.getConnectionProxy().getDbType();
         if (CollectionUtils.isEmpty(sqlRecognizers)) {
+            //获取SQL识别器
             sqlRecognizers = SQLVisitorFactory.get(
                     statementProxy.getTargetSQL(),
                     dbType);
@@ -85,10 +88,12 @@ public class ExecuteTemplate {
                 SQLRecognizer sqlRecognizer = sqlRecognizers.get(0);
                 switch (sqlRecognizer.getSQLType()) {
                     case INSERT:
+                        //插入SQL
                         executor = EnhancedServiceLoader.load(InsertExecutor.class, dbType,
                                 new Class[]{StatementProxy.class, StatementCallback.class, SQLRecognizer.class},
                                 new Object[]{statementProxy, statementCallback, sqlRecognizer});
                         break;
+                        //更新SQL
                     case UPDATE:
                         executor = new UpdateExecutor<>(statementProxy, statementCallback, sqlRecognizer);
                         break;
@@ -108,6 +113,7 @@ public class ExecuteTemplate {
         }
         T rs;
         try {
+            //执行SQL
             rs = executor.execute(args);
         } catch (Throwable ex) {
             if (!(ex instanceof SQLException)) {

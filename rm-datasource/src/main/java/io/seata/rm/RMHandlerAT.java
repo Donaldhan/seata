@@ -23,6 +23,7 @@ import java.util.Date;
 import io.seata.core.model.BranchType;
 import io.seata.core.model.ResourceManager;
 import io.seata.core.protocol.transaction.UndoLogDeleteRequest;
+import io.seata.rm.datasource.ConnectionProxy;
 import io.seata.rm.datasource.DataSourceManager;
 import io.seata.rm.datasource.DataSourceProxy;
 import io.seata.rm.datasource.undo.UndoLogManagerFactory;
@@ -40,6 +41,10 @@ public class RMHandlerAT extends AbstractRMHandler {
 
     private static final int LIMIT_ROWS = 3000;
 
+    /**
+     * {@link ConnectionProxy#setAutoCommit(boolean)}
+     * @param request the request
+     */
     @Override
     public void handle(UndoLogDeleteRequest request) {
         DataSourceManager dataSourceManager = (DataSourceManager)getResourceManager();

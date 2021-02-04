@@ -24,13 +24,14 @@ import com.alibaba.druid.sql.ast.statement.SQLUpdateStatement;
 import io.seata.common.util.CollectionUtils;
 import io.seata.sqlparser.SQLRecognizer;
 import io.seata.sqlparser.SQLRecognizerFactory;
+import io.seata.sqlparser.druid.mysql.MySQLOperateRecognizerHolder;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * DruidSQLRecognizerFactoryImpl
- *
+ * {@link MySQLOperateRecognizerHolder}
  * @author sharajava
  * @author ggndnn
  */
@@ -51,12 +52,16 @@ class DruidSQLRecognizerFactoryImpl implements SQLRecognizerFactory {
             SQLOperateRecognizerHolder recognizerHolder =
                     SQLOperateRecognizerHolderFactory.getSQLRecognizerHolder(dbType.toLowerCase());
             if (ast instanceof SQLInsertStatement) {
+                //插入SQL
                 recognizer = recognizerHolder.getInsertRecognizer(sql, ast);
             } else if (ast instanceof SQLUpdateStatement) {
+                //更新SQL
                 recognizer = recognizerHolder.getUpdateRecognizer(sql, ast);
             } else if (ast instanceof SQLDeleteStatement) {
+                //删除SQL
                 recognizer = recognizerHolder.getDeleteRecognizer(sql, ast);
             } else if (ast instanceof SQLSelectStatement) {
+                //查询SQL
                 recognizer = recognizerHolder.getSelectForUpdateRecognizer(sql, ast);
             }
             if (recognizer != null) {

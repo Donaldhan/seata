@@ -69,6 +69,14 @@ public class MySQLUndoLogManager extends AbstractUndoLogManager {
         }
     }
 
+    /**
+     * @param xid            the xid
+     * @param branchId       the branchId
+     * @param rollbackCtx    the rollbackContext
+     * @param undoLogContent the undoLogContent
+     * @param conn           sql connection
+     * @throws SQLException
+     */
     @Override
     protected void insertUndoLogWithNormal(String xid, long branchId, String rollbackCtx, byte[] undoLogContent,
                                            Connection conn) throws SQLException {

@@ -66,11 +66,20 @@ public abstract class BaseInsertExecutor<T, S extends Statement> extends Abstrac
         super(statementProxy, statementCallback, sqlRecognizer);
     }
 
+    /**
+     * @return
+     * @throws SQLException
+     */
     @Override
     protected TableRecords beforeImage() throws SQLException {
         return TableRecords.empty(getTableMeta());
     }
 
+    /**
+     * @param beforeImage the before image
+     * @return
+     * @throws SQLException
+     */
     @Override
     protected TableRecords afterImage(TableRecords beforeImage) throws SQLException {
         Map<String, List<Object>> pkValues = getPkValues();
@@ -130,6 +139,7 @@ public abstract class BaseInsertExecutor<T, S extends Statement> extends Abstrac
 
     /**
      * parse primary key value from statement.
+     * 从statement获取主键key
      * @return
      */
     protected Map<String, List<Object>> parsePkValuesFromStatement() {

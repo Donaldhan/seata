@@ -72,7 +72,7 @@ public class MySQLInsertExecutor extends BaseInsertExecutor implements Defaultab
         Map<String,List<Object>> pkValuesMap = null;
         List<String> pkColumnNameList = getTableMeta().getPrimaryKeyOnlyName();
         Boolean isContainsPk = containsPK();
-        //when there is only one pk in the table
+        //when there is only one pk in the table 在table中只有唯一PK
         if (getTableMeta().getPrimaryKeyOnlyName().size() == 1) {
             if (isContainsPk) {
                 pkValuesMap = getPkValuesByColumn();
@@ -147,6 +147,10 @@ public class MySQLInsertExecutor extends BaseInsertExecutor implements Defaultab
         return pkValuesMap;
     }
 
+    /**
+     * @return
+     * @throws SQLException
+     */
     @Override
     public Map<String,List<Object>> getPkValuesByColumn() throws SQLException {
         Map<String,List<Object>> pkValuesMap  = parsePkValuesFromStatement();

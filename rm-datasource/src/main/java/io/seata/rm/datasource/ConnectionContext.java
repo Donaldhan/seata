@@ -36,8 +36,12 @@ public class ConnectionContext {
 
     /**
      * Table and primary key should not be duplicated.
+     * 表主键锁
      */
     private Set<String> lockKeysBuffer = new HashSet<>();
+    /**
+     * undo sql log
+     */
     private List<SQLUndoLog> sqlUndoItemsBuffer = new ArrayList<>();
 
     /**

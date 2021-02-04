@@ -45,7 +45,7 @@ public abstract class AbstractResourceManager implements ResourceManager {
 
     /**
      * registry branch record
-     *
+     * 注册资源事务分支
      * @param branchType the branch type
      * @param resourceId the resource id
      * @param clientId   the client id
@@ -78,7 +78,7 @@ public abstract class AbstractResourceManager implements ResourceManager {
 
     /**
      * report branch status
-     *
+     * 报告资源事务分支状态
      * @param branchType      the branch type
      * @param xid             the xid
      * @param branchId        the branch id
@@ -116,6 +116,10 @@ public abstract class AbstractResourceManager implements ResourceManager {
         throw new NotSupportYetException("unregister a resource");
     }
 
+    /**
+     * 注册资源
+     * @param resource The resource to be managed.
+     */
     @Override
     public void registerResource(Resource resource) {
         RmNettyRemotingClient.getInstance().registerResource(resource.getResourceGroupId(), resource.getResourceId());

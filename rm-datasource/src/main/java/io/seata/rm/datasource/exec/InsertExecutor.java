@@ -26,7 +26,7 @@ public interface InsertExecutor<T> extends Executor<T> {
 
     /**
      * get primary key values.
-     *
+     * 获取主键值
      * @return The primary key value.
      * @throws SQLException
      */

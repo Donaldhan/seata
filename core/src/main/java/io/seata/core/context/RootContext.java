@@ -146,7 +146,7 @@ public class RootContext {
 
     /**
      * In global transaction boolean.
-     *
+     * 是否在全局事务中
      * @return the boolean
      */
     public static boolean inGlobalTransaction() {
@@ -183,7 +183,7 @@ public class RootContext {
             if (branchType != null) {
                 return branchType;
             }
-            //Returns the default branch type.
+            //Returns the default branch type. 默认为AT事务分支
             return DEFAULT_BRANCH_TYPE != null ? DEFAULT_BRANCH_TYPE : BranchType.AT;
         }
         return null;
@@ -191,6 +191,7 @@ public class RootContext {
 
     /**
      * bind branch type
+     * 绑定分支事务类型
      *
      * @param branchType the branch type
      */

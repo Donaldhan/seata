@@ -240,7 +240,7 @@ public abstract class AbstractUndoLogManager implements UndoLogManager {
 
     /**
      * Flush undo logs.
-     *
+     * 刷新undo log
      * @param cp the cp
      * @throws SQLException the sql exception
      */

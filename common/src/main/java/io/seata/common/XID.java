@@ -46,7 +46,7 @@ public class XID {
 
     /**
      * Generate xid string.
-     *
+     * ipAddress + ":" + port + ":" + tranId;
      * @param tranId the tran id
      * @return the string
      */

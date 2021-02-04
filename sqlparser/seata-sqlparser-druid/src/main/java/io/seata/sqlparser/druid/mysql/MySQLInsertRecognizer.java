@@ -46,6 +46,9 @@ import java.util.List;
  */
 public class MySQLInsertRecognizer extends BaseMySQLRecognizer implements SQLInsertRecognizer {
 
+    /**
+     *
+     */
     private final MySqlInsertStatement ast;
 
     /**

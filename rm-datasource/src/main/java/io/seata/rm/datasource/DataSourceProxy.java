@@ -122,7 +122,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
             }, 0, TABLE_META_CHECKER_INTERVAL, TimeUnit.MILLISECONDS);
         }
 
-        //Set the default branch type to 'AT' in the RootContext.
+        //Set the default branch type to 'AT' in the RootContext. 设置默认的分支事务模式
         RootContext.setDefaultBranchType(this.getBranchType());
     }
 
@@ -175,6 +175,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements Resource
 
     /**
      * get the default resource id
+     * 获取资源id
      * @return resource id
      */
     private String getDefaultResourceId() {

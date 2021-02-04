@@ -46,7 +46,7 @@ import java.util.List;
 
 /**
  * The type Base transactional executor.
- *
+ * 基础事务执行器
  * @param <T> the type parameter
  * @param <S> the type parameter
  * @author sharajava
@@ -55,11 +55,13 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
 
     /**
      * The Statement proxy.
+     * Statement 代理
      */
     protected StatementProxy<S> statementProxy;
 
     /**
      * The Statement callback.
+     * Statement 回调
      */
     protected StatementCallback<T, S> statementCallback;
 
@@ -73,6 +75,9 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
      */
     protected List<SQLRecognizer> sqlRecognizers;
 
+    /**
+     * 表元信息
+     */
     private TableMeta tableMeta;
 
     /**
@@ -103,13 +108,19 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
         this.sqlRecognizers = sqlRecognizers;
     }
 
+    /**
+     * 执行DML SQL
+     * @param args the args
+     * @return
+     * @throws Throwable
+     */
     @Override
     public T execute(Object... args) throws Throwable {
         String xid = RootContext.getXID();
         if (xid != null) {
+            //绑定全局事务Xid到连接代理ConnectionProxy
             statementProxy.getConnectionProxy().bind(xid);
         }
-
         statementProxy.getConnectionProxy().setGlobalLockRequire(RootContext.requireGlobalLock());
         return doExecute(args);
     }
@@ -261,7 +272,10 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
 
     /**
      * prepare undo log.
-     *
+     * 预编译Undo log
+     * 如果为更新SQL 则check数据记录的前后镜像的column数量；
+     * 构建锁Key，添加到connectionProxy上下文ConnectionContext
+     * 根据数据前后镜像构建undo log
      * @param beforeImage the before image
      * @param afterImage  the after image
      * @throws SQLException the sql exception
@@ -271,13 +285,14 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
             return;
         }
         if (SQLType.UPDATE == sqlRecognizer.getSQLType()) {
+            //check column size
             if (beforeImage.getRows().size() != afterImage.getRows().size()) {
                 throw new ShouldNeverHappenException("Before image size is not equaled to after image size, probably because you updated the primary keys.");
             }
         }
         ConnectionProxy connectionProxy = statementProxy.getConnectionProxy();
-
         TableRecords lockKeyRecords = sqlRecognizer.getSQLType() == SQLType.DELETE ? beforeImage : afterImage;
+        //构建LockKey 删除根据beforeImage
         String lockKeys = buildLockKey(lockKeyRecords);
         connectionProxy.appendLockKey(lockKeys);
 

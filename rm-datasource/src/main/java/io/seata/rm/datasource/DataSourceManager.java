@@ -54,6 +54,15 @@ public class DataSourceManager extends AbstractResourceManager {
      */
     private final Map<String, Resource> dataSourceCache = new ConcurrentHashMap<>();
 
+    /**
+     * 查询全局事务
+     * @param branchType
+     * @param resourceId
+     * @param xid
+     * @param lockKeys
+     * @return
+     * @throws TransactionException
+     */
     @Override
     public boolean lockQuery(BranchType branchType, String resourceId, String xid, String lockKeys) throws TransactionException {
         GlobalLockQueryRequest request = new GlobalLockQueryRequest();

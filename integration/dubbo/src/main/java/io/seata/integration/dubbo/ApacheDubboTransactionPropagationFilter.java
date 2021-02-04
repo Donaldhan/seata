@@ -31,7 +31,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The type Transaction propagation filter.
+ * 基于DUBBO的，事务传播过滤器
  *
+ * 基于DUBBO的AT服务，主要根据RootContext的XID和事务分支类型，决定是否处于全局事务中，及执行的事务类型
  * @author sharajava
  */
 @Activate(group = {DubboConstants.PROVIDER, DubboConstants.CONSUMER}, order = 100)
@@ -42,8 +44,9 @@ public class ApacheDubboTransactionPropagationFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         String xid = RootContext.getXID();
+        //默认为AT模式
         BranchType branchType = RootContext.getBranchType();
-
+        //获取rpc全局事务id
         String rpcXid = getRpcXid();
         String rpcBranchType = RpcContext.getContext().getAttachment(RootContext.KEY_BRANCH_TYPE);
         if (LOGGER.isDebugEnabled()) {
@@ -51,10 +54,13 @@ public class ApacheDubboTransactionPropagationFilter implements Filter {
         }
         boolean bind = false;
         if (xid != null) {
+            //Dubbo服务消费者 Seata AT 事务分支
+            //将全局事务的xid和分支类型，放到DUBBO RpcContext的Attachment中
             RpcContext.getContext().setAttachment(RootContext.KEY_XID, xid);
             RpcContext.getContext().setAttachment(RootContext.KEY_BRANCH_TYPE, branchType.name());
         } else {
             if (rpcXid != null) {
+                //Dubbo服务提供者 Seata AT 事务分支
                 RootContext.bind(rpcXid);
                 if (StringUtils.equals(BranchType.TCC.name(), rpcBranchType)) {
                     RootContext.bindBranchType(BranchType.TCC);
@@ -69,6 +75,7 @@ public class ApacheDubboTransactionPropagationFilter implements Filter {
             return invoker.invoke(invocation);
         } finally {
             if (bind) {
+                //解绑全局事务（RootContext），Xid及事务分支类型
                 BranchType previousBranchType = RootContext.getBranchType();
                 String unbindXid = RootContext.unbind();
                 if (BranchType.TCC == previousBranchType) {
@@ -94,6 +101,7 @@ public class ApacheDubboTransactionPropagationFilter implements Filter {
     }
 
     /**
+     * 获取rpc全局事务id
      * get rpc xid
      * @return
      */
