@@ -344,18 +344,39 @@ public class ConnectionProxy extends AbstractConnectionProxy {
         }
     }
 
+    /**
+     *
+     ### rm
+     seata.client.rm.lock.retry-times=30
+     seata.client.rm.async-commit-buffer-limit=10000
+     seata.client.rm.lock.retry-interval=10
+     seata.client.rm.lock.retry-policy-branch-rollback-on-conflict=true
+     seata.client.rm.table-meta-check-enable=false
+     seata.client.rm.report-retry-count=5
+     seata.client.rm.report-success-enable=false
+     seata.client.rm.saga-json-parser=fastjson
+     seata.client.rm.saga-branch-register-enable=false
+     *
+     */
     public static class LockRetryPolicy {
         protected static final boolean LOCK_RETRY_POLICY_BRANCH_ROLLBACK_ON_CONFLICT = ConfigurationFactory
             .getInstance().getBoolean(ConfigurationKeys.CLIENT_LOCK_RETRY_POLICY_BRANCH_ROLLBACK_ON_CONFLICT, DEFAULT_CLIENT_LOCK_RETRY_POLICY_BRANCH_ROLLBACK_ON_CONFLICT);
 
         public <T> T execute(Callable<T> callable) throws Exception {
             if (LOCK_RETRY_POLICY_BRANCH_ROLLBACK_ON_CONFLICT) {
+                //分支锁冲突重试
                 return callable.call();
             } else {
                 return doRetryOnLockConflict(callable);
             }
         }
 
+        /**
+         * @param callable
+         * @param <T>
+         * @return
+         * @throws Exception
+         */
         protected <T> T doRetryOnLockConflict(Callable<T> callable) throws Exception {
             LockRetryController lockRetryController = new LockRetryController();
             while (true) {
