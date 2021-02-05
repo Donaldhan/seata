@@ -185,6 +185,9 @@ public abstract class AbstractDMLBaseExecutor<T, S extends Statement> extends Ba
      */
     protected abstract TableRecords afterImage(TableRecords beforeImage) throws SQLException;
 
+    /**
+     *
+     */
     private static class LockRetryPolicy extends ConnectionProxy.LockRetryPolicy {
         private final ConnectionProxy connection;
 

@@ -219,6 +219,7 @@ public class ConnectionProxy extends AbstractConnectionProxy {
             //在全局事务中提交分支事务
             processGlobalTransactionCommit();
         } else if (context.isGlobalLockRequire()) {
+            //一般为TM，事务发起方，先获取全局锁
             processLocalCommitWithGlobalLocks();
         } else {
             //直接提交
