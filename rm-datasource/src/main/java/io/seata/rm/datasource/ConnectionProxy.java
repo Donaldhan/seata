@@ -275,7 +275,14 @@ public class ConnectionProxy extends AbstractConnectionProxy {
     }
 
     /**
-     * 注册
+     * 注册分支
+     * TC 处理分支注册逻辑
+     *
+     * {ATCore#branchSessionLock}
+     * 首先确保全局事务会话为激活状态，状态为{GlobalStatus#Begin}
+     * 创建全局会话，AT模式：锁事务分支（即插入分支事务关联的行锁）
+     * 添加分支事务，针对AT模式，插入分支事务表
+     *
      * @throws TransactionException
      */
     private void register() throws TransactionException {

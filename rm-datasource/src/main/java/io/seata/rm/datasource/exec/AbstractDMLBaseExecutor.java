@@ -149,7 +149,7 @@ public abstract class AbstractDMLBaseExecutor<T, S extends Statement> extends Ba
             //先false
             connectionProxy.setAutoCommit(false);
             return new LockRetryPolicy(connectionProxy).execute(() -> {
-                //执行非自动提交
+                //执行非自动提交， undo & lock key
                 T result = executeAutoCommitFalse(args);
                 //手动提交
                 connectionProxy.commit();

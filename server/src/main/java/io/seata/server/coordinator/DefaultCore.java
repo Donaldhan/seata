@@ -105,6 +105,11 @@ public class DefaultCore implements Core {
 
     /**
      * 注册分支事务
+     * {@link ATCore#branchSessionLock}
+     *
+     * 首先确保全局事务会话为激活状态，状态为{@link GlobalStatus#Begin}
+     * 创建全局会话，AT模式：锁事务分支（即插入分支事务关联的行锁）
+     * 添加分支事务，针对AT模式，插入分支事务表
      *
      * @param branchType      the branch type
      * @param resourceId      the resource id
