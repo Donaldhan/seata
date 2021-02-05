@@ -54,7 +54,7 @@ public final class ColumnUtils {
 
     /**
      * del escape by db type
-     *
+     * 剔除标准的escape符号，比如：mysql(``)
      * @param cols   the cols
      * @param dbType the db type
      * @return

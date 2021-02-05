@@ -114,7 +114,7 @@ public class TableMeta {
 
     /**
      * Gets primary key map.
-     *
+     * 获取主键元数据Map
      * @return the primary key map
      */
     public Map<String, ColumnMeta> getPrimaryKeyMap() {
@@ -136,7 +136,7 @@ public class TableMeta {
 
     /**
      * Gets primary key only name.
-     *
+     *  获取主键key的名称
      * @return the primary key only name
      */
     @SuppressWarnings("serial")
@@ -159,7 +159,7 @@ public class TableMeta {
 
     /**
      * Contains pk boolean.
-     *
+     * 表元数据中是否包含pk字段
      * @param cols the cols
      * @return the boolean
      */

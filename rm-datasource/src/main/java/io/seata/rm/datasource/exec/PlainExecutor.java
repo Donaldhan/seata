@@ -44,6 +44,12 @@ public class PlainExecutor<T, S extends Statement> implements Executor<T> {
         this.statementCallback = statementCallback;
     }
 
+    /**
+     * 直接执行
+     * @param args the args
+     * @return
+     * @throws Throwable
+     */
     @Override
     public T execute(Object... args) throws Throwable {
         return statementCallback.execute(statementProxy.getTargetStatement(), args);

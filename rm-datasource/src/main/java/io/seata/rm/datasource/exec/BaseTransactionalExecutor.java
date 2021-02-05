@@ -137,7 +137,7 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
 
     /**
      * build buildWhereCondition
-     *
+     * 构建where条件
      * @param recognizer        the recognizer
      * @param paramAppenderList the param paramAppender list
      * @return the string
@@ -238,6 +238,7 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
         if (columns == null || columns.isEmpty()) {
             return false;
         }
+        //剔除标准的escape符号，比如：mysql(``)
         List<String> newColumns = ColumnUtils.delEscape(columns, getDbType());
         return getTableMeta().containsPK(newColumns);
     }
@@ -257,7 +258,7 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
 
     /**
      * get standard pk column name from user sql column name
-     *
+     * 获取实际的标准主键字段名
      * @return
      */
     protected String getStandardPkColumnName(String userColumnName) {
@@ -355,7 +356,7 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
 
     /**
      * build a BeforeImage
-     *
+     * 根据SQL查询结果构建镜像
      * @param tableMeta         the tableMeta
      * @param selectSQL         the selectSQL
      * @param paramAppenderList the paramAppender list
@@ -382,7 +383,7 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
 
     /**
      * build TableRecords
-     *
+     * 根据主键key及相应的值，获取记录，构建表记录TableRecords
      * @param pkValuesMap the pkValuesMap
      * @return return TableRecords;
      * @throws SQLException
@@ -413,6 +414,7 @@ public abstract class BaseTransactionalExecutor<T, S extends Statement> implemen
                 }
             }
             rs = ps.executeQuery();
+            //根据表元数据和行记录构建TableRecords
             return TableRecords.buildRecords(getTableMeta(), rs);
         } finally {
             IOUtil.close(rs);

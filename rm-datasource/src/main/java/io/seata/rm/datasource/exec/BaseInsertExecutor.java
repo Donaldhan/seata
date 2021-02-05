@@ -67,6 +67,7 @@ public abstract class BaseInsertExecutor<T, S extends Statement> extends Abstrac
     }
 
     /**
+     * 插入操作前镜像为空{@link TableRecords.EmptyTableRecords}
      * @return
      * @throws SQLException
      */
@@ -76,13 +77,16 @@ public abstract class BaseInsertExecutor<T, S extends Statement> extends Abstrac
     }
 
     /**
+     * 根据主键key及相应的值，获取记录，构建表记录TableRecords
      * @param beforeImage the before image
      * @return
      * @throws SQLException
      */
     @Override
     protected TableRecords afterImage(TableRecords beforeImage) throws SQLException {
+        //获取主键key
         Map<String, List<Object>> pkValues = getPkValues();
+        //根据主键key，构建镜像
         TableRecords afterImage = buildTableRecords(pkValues);
         if (afterImage == null) {
             throw new SQLException("Failed to build after-image for insert");
@@ -90,6 +94,10 @@ public abstract class BaseInsertExecutor<T, S extends Statement> extends Abstrac
         return afterImage;
     }
 
+    /**
+     * 表元数据中是否包含pk字段
+     * @return
+     */
     protected boolean containsPK() {
         SQLInsertRecognizer recognizer = (SQLInsertRecognizer) sqlRecognizer;
         List<String> insertColumns = recognizer.getInsertColumns();
@@ -101,6 +109,7 @@ public abstract class BaseInsertExecutor<T, S extends Statement> extends Abstrac
 
     /**
      * judge sql specify column
+     * 判断sql中是否包含字段
      * @return true: contains column. false: not contains column.
      */
     protected boolean containsColumns() {
@@ -109,11 +118,13 @@ public abstract class BaseInsertExecutor<T, S extends Statement> extends Abstrac
 
     /**
      * get pk index
+     * 获取主键key的字段索引
      * @return the key is pk column name and the value is index of the pk column
      */
     protected Map<String, Integer> getPkIndex() {
         Map<String, Integer> pkIndexMap = new HashMap<>();
         SQLInsertRecognizer recognizer = (SQLInsertRecognizer) sqlRecognizer;
+        //获取插入字段
         List<String> insertColumns = recognizer.getInsertColumns();
         if (CollectionUtils.isNotEmpty(insertColumns)) {
             final int insertColumnsSize = insertColumns.size();
@@ -130,6 +141,7 @@ public abstract class BaseInsertExecutor<T, S extends Statement> extends Abstrac
         for (Map.Entry<String, ColumnMeta> entry : allColumns.entrySet()) {
             pkIndex++;
             if (containPK(entry.getValue().getColumnName())) {
+                //添加实际主键key的数据库字段名及索引关系
                 pkIndexMap.put(ColumnUtils.delEscape(entry.getValue().getColumnName(), getDbType()), pkIndex);
             }
         }
@@ -139,12 +151,16 @@ public abstract class BaseInsertExecutor<T, S extends Statement> extends Abstrac
 
     /**
      * parse primary key value from statement.
-     * 从statement获取主键key
+     *
+     * 从statement获取主键key值
+     *
+     * 批量Insert存在多个值
      * @return
      */
     protected Map<String, List<Object>> parsePkValuesFromStatement() {
         // insert values including PK
         SQLInsertRecognizer recognizer = (SQLInsertRecognizer) sqlRecognizer;
+        //获取主键key的字段索引
         final Map<String, Integer> pkIndexMap = getPkIndex();
         if (pkIndexMap.isEmpty()) {
             throw new ShouldNeverHappenException("pkIndex is not found");

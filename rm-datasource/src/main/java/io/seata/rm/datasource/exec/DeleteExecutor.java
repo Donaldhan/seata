@@ -52,16 +52,24 @@ public class DeleteExecutor<T, S extends Statement> extends AbstractDMLBaseExecu
         super(statementProxy, statementCallback, sqlRecognizer);
     }
 
+    /**
+     * 构建前镜像
+     * @return
+     * @throws SQLException
+     */
     @Override
     protected TableRecords beforeImage() throws SQLException {
         SQLDeleteRecognizer visitor = (SQLDeleteRecognizer) sqlRecognizer;
         TableMeta tmeta = getTableMeta(visitor.getTableName());
         ArrayList<List<Object>> paramAppenderList = new ArrayList<>();
+        //构建镜像SQL
         String selectSQL = buildBeforeImageSQL(visitor, tmeta, paramAppenderList);
+        //根据SQL查询结果构建镜像
         return buildTableRecords(tmeta, selectSQL, paramAppenderList);
     }
 
     /**
+     * 构建镜像SQL
      * @param visitor
      * @param tableMeta
      * @param paramAppenderList
@@ -90,6 +98,12 @@ public class DeleteExecutor<T, S extends Statement> extends AbstractDMLBaseExecu
         return selectSQLAppender.toString();
     }
 
+    /**
+     * 删除操作，后镜像为空{@link TableRecords.EmptyTableRecords}
+     * @param beforeImage the before image
+     * @return
+     * @throws SQLException
+     */
     @Override
     protected TableRecords afterImage(TableRecords beforeImage) throws SQLException {
         return TableRecords.empty(getTableMeta());

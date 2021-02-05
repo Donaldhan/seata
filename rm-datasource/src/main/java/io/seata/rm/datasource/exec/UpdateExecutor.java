@@ -64,14 +64,26 @@ public class UpdateExecutor<T, S extends Statement> extends AbstractDMLBaseExecu
         super(statementProxy, statementCallback, sqlRecognizer);
     }
 
+    /**
+     * @return
+     * @throws SQLException
+     */
     @Override
     protected TableRecords beforeImage() throws SQLException {
         ArrayList<List<Object>> paramAppenderList = new ArrayList<>();
         TableMeta tmeta = getTableMeta();
+        //构建镜像SQL
         String selectSQL = buildBeforeImageSQL(tmeta, paramAppenderList);
+        //构建镜像
         return buildTableRecords(tmeta, selectSQL, paramAppenderList);
     }
 
+    /**
+     * 构建镜像SQL
+     * @param tableMeta
+     * @param paramAppenderList
+     * @return
+     */
     private String buildBeforeImageSQL(TableMeta tableMeta, ArrayList<List<Object>> paramAppenderList) {
         SQLUpdateRecognizer recognizer = (SQLUpdateRecognizer) sqlRecognizer;
         List<String> updateColumns = recognizer.getUpdateColumns();
@@ -107,23 +119,37 @@ public class UpdateExecutor<T, S extends Statement> extends AbstractDMLBaseExecu
         return selectSQLJoin.toString();
     }
 
+    /**
+     * @param beforeImage the before image
+     * @return
+     * @throws SQLException
+     */
     @Override
     protected TableRecords afterImage(TableRecords beforeImage) throws SQLException {
         TableMeta tmeta = getTableMeta();
         if (beforeImage == null || beforeImage.size() == 0) {
             return TableRecords.empty(getTableMeta());
         }
+        //构建after 镜像SQL
         String selectSQL = buildAfterImageSQL(tmeta, beforeImage);
         ResultSet rs = null;
         try (PreparedStatement pst = statementProxy.getConnection().prepareStatement(selectSQL)) {
             SqlGenerateUtils.setParamForPk(beforeImage.pkRows(), getTableMeta().getPrimaryKeyOnlyName(), pst);
             rs = pst.executeQuery();
+            //根据查询结果，构镜像
             return TableRecords.buildRecords(tmeta, rs);
         } finally {
             IOUtil.close(rs);
         }
     }
 
+    /**
+     * 构建after 镜像SQL
+     * @param tableMeta
+     * @param beforeImage
+     * @return
+     * @throws SQLException
+     */
     private String buildAfterImageSQL(TableMeta tableMeta, TableRecords beforeImage) throws SQLException {
         StringBuilder prefix = new StringBuilder("SELECT ");
         String whereSql = SqlGenerateUtils.buildWhereConditionByPKs(tableMeta.getPrimaryKeyOnlyName(), beforeImage.pkRows().size(), getDbType());

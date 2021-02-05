@@ -67,16 +67,24 @@ public class MySQLInsertExecutor extends BaseInsertExecutor implements Defaultab
         super(statementProxy, statementCallback, sqlRecognizer);
     }
 
+    /**
+     * @return
+     * @throws SQLException
+     */
     @Override
     public Map<String,List<Object>> getPkValues() throws SQLException {
         Map<String,List<Object>> pkValuesMap = null;
+        //获取主键key的名称
         List<String> pkColumnNameList = getTableMeta().getPrimaryKeyOnlyName();
+        //表元数据中是否包含pk字段
         Boolean isContainsPk = containsPK();
-        //when there is only one pk in the table 在table中只有唯一PK
+        //when there is only one pk in the table 在table中只有一个PK
         if (getTableMeta().getPrimaryKeyOnlyName().size() == 1) {
+            //表元数据包含主键
             if (isContainsPk) {
                 pkValuesMap = getPkValuesByColumn();
             }
+            //sql中包含字段
             else if (containsColumns()) {
                 pkValuesMap = getPkValuesByAuto();
             }
@@ -87,6 +95,9 @@ public class MySQLInsertExecutor extends BaseInsertExecutor implements Defaultab
             //when there is multiple pk in the table
             //1,all pk columns are filled value.
             //2,the auto increment pk column value is null, and other pk value are not null.
+            //表为多主键
+            //1. 所有的pk字段存在值
+            //2. 自增pk字段为空，其他主键不能为空
             pkValuesMap = getPkValuesByColumn();
             for (String columnName:pkColumnNameList) {
                 if (!pkValuesMap.containsKey(columnName)) {
@@ -102,6 +113,7 @@ public class MySQLInsertExecutor extends BaseInsertExecutor implements Defaultab
     }
 
     /**
+     * 自动获取pk值
      * the modify for test
      */
     public Map<String, List<Object>> getPkValuesByAuto() throws SQLException {
@@ -121,6 +133,7 @@ public class MySQLInsertExecutor extends BaseInsertExecutor implements Defaultab
 
         ResultSet genKeys;
         try {
+            //生成主键
             genKeys = statementProxy.getGeneratedKeys();
         } catch (SQLException e) {
             // java.sql.SQLException: Generated keys not requested. You need to
@@ -148,21 +161,26 @@ public class MySQLInsertExecutor extends BaseInsertExecutor implements Defaultab
     }
 
     /**
+     *
      * @return
      * @throws SQLException
      */
     @Override
     public Map<String,List<Object>> getPkValuesByColumn() throws SQLException {
+        //从statement获取主键key值
         Map<String,List<Object>> pkValuesMap  = parsePkValuesFromStatement();
         Set<String> keySet = new HashSet<>(pkValuesMap.keySet());
         //auto increment
         for (String pkKey:keySet) {
             List<Object> pkValues = pkValuesMap.get(pkKey);
             // pk auto generated while single insert primary key is expression
+            //单插入，pk自增，，插入的主键可以为表达式
             if (pkValues.size() == 1 && (pkValues.get(0) instanceof SqlMethodExpr)) {
+                //自动获取pk值
                 pkValuesMap.putAll(getPkValuesByAuto());
             }
             // pk auto generated while column exists and value is null
+            // 自增主键，逐且主键值为空
             else if (!pkValues.isEmpty() && pkValues.get(0) instanceof Null) {
                 pkValuesMap.putAll(getPkValuesByAuto());
             }

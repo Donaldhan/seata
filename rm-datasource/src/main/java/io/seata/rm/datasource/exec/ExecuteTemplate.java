@@ -98,6 +98,7 @@ public class ExecuteTemplate {
                         executor = new UpdateExecutor<>(statementProxy, statementCallback, sqlRecognizer);
                         break;
                     case DELETE:
+                        //删除SQL
                         executor = new DeleteExecutor<>(statementProxy, statementCallback, sqlRecognizer);
                         break;
                     case SELECT_FOR_UPDATE:

@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The type Select for update executor.
- *
+ * Select for update  执行器
  * @param <S> the type parameter
  * @author sharajava
  */
@@ -59,6 +59,7 @@ public class SelectForUpdateExecutor<T, S extends Statement> extends BaseTransac
         Connection conn = statementProxy.getConnection();
         DatabaseMetaData dbmd = conn.getMetaData();
         T rs;
+        //保存点
         Savepoint sp = null;
         boolean originalAutoCommit = conn.getAutoCommit();
         try {
@@ -81,6 +82,7 @@ public class SelectForUpdateExecutor<T, S extends Statement> extends BaseTransac
 
             LockRetryController lockRetryController = new LockRetryController();
             ArrayList<List<Object>> paramAppenderList = new ArrayList<>();
+            //构建选择SQL
             String selectPKSQL = buildSelectSQL(paramAppenderList);
             while (true) {
                 try {
@@ -89,7 +91,7 @@ public class SelectForUpdateExecutor<T, S extends Statement> extends BaseTransac
                     // executeQuery return ResultSet
                     rs = statementCallback.execute(statementProxy.getTargetStatement(), args);
 
-                    // Try to get global lock of those rows selected
+                    // Try to get global lock of those rows selected 根据主键构建表记录
                     TableRecords selectPKRows = buildTableRecords(getTableMeta(), selectPKSQL, paramAppenderList);
                     String lockKeys = buildLockKey(selectPKRows);
                     if (StringUtils.isNullOrEmpty(lockKeys)) {
@@ -99,6 +101,7 @@ public class SelectForUpdateExecutor<T, S extends Statement> extends BaseTransac
                     if (RootContext.inGlobalTransaction() || RootContext.requireGlobalLock()) {
                         // Do the same thing under either @GlobalTransactional or @GlobalLock, 
                         // that only check the global lock  here.
+                        //全局事务和全局锁同时注解，检查全局锁
                         statementProxy.getConnectionProxy().checkLock(lockKeys);
                     } else {
                         throw new RuntimeException("Unknown situation!");
@@ -131,6 +134,11 @@ public class SelectForUpdateExecutor<T, S extends Statement> extends BaseTransac
         return rs;
     }
 
+    /**
+     * 构建选择SQL
+     * @param paramAppenderList
+     * @return
+     */
     private String buildSelectSQL(ArrayList<List<Object>> paramAppenderList) {
         SQLSelectRecognizer recognizer = (SQLSelectRecognizer)sqlRecognizer;
         StringBuilder selectSQLAppender = new StringBuilder("SELECT ");
