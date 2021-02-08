@@ -25,7 +25,8 @@ end note
 :生成事务分支信息;
 :获取分支事务锁;
 note right
-分支事务关联记录主键的行锁，lock_table
+分支事务关联记录主键的行锁，
+lock_table
 end note
 :落库;
 note right
@@ -51,7 +52,7 @@ note right
 end note
 
 |TM|
-if (全局事务执行成功) then (yes)
+if (全局事务业务执行成功) then (yes)
 -[#green,dashed]->
 :发起全局事务提交;
 |TC|
