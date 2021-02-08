@@ -90,7 +90,7 @@ public abstract class AbstractCore implements Core {
 //            检查当前全局事务会话为激活状态，状态为{@link GlobalStatus#Begin}
             globalSessionStatusCheck(globalSession);
             globalSession.addSessionLifecycleListener(SessionHolder.getRootSessionManager());
-            //创建全局会话
+            //创建事务分支会话
             BranchSession branchSession = SessionHelper.newBranchByGlobal(globalSession, branchType, resourceId,
                     applicationData, lockKeys, clientId);
 //          AT模式：添加分支事务锁（即插入分支事务关联的行锁）

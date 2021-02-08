@@ -1,0 +1,87 @@
+@startuml
+|TM|
+start
+:开启全局事务;
+|RM1|
+|RM2|
+|TC|
+:生成全局事务;
+note right
+全局事务id，事务分组，应用id
+end note
+:添加到会话管理器;
+:落库;
+note right
+global_table
+end note
+|TM|
+:执行全局事务业务;
+|RM1|
+note right
+分支事务
+end note
+:注册事物分支;
+|TC|
+:生成事务分支信息;
+:获取分支事务锁;
+note right
+分支事务关联记录主键的行锁，lock_table
+end note
+:落库;
+note right
+branch_table
+end note
+:添加分支事务到全局事务会话;
+|RM1|
+:执行本地事务;
+:保存undo日志到本地重做日志表;
+note right
+事务undo_log，
+关联行数据的前后镜像
+end note
+:报告分支事务状态;
+|TC|
+:更新分支事务状态;
+|RM2|
+:执行RM2本地事务;
+note right
+分支事务RM2,
+分支事务的注册
+和状态上报与RM1基本相同
+end note
+
+|TM|
+if (全局事务执行成功) then (yes)
+:发起全局事务提交;
+|TC|
+:遍历所有分支事务;
+:发生分支事务RM1提交请求;
+|RM1|
+:RM删除Undo log;
+|TC|
+:发生分支事务RM2提交请求;
+|RM2|
+:RM删除Undo log;
+|TC|
+:检查所有RM提交完;
+:更新全局事务状态;
+note right
+{@link GlobalStatus#Committed}
+end note
+:清理全局事务资源;
+note right
+释放全局事务相关的锁，并从会话管理器中移除全局会话
+end note
+:结束全局事务;
+else (no)
+|TM|
+:发起全局事务回滚;
+note right
+分支事务执行发生异常
+end note
+|TC|
+endif
+|TM|
+:全局事务结束;
+stop
+@enduml
