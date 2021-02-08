@@ -52,36 +52,74 @@ end note
 
 |TM|
 if (全局事务执行成功) then (yes)
+-[#green,dashed]->
 :发起全局事务提交;
 |TC|
+-[#green,dashed]->
 :遍历所有分支事务;
-:发生分支事务RM1提交请求;
+-[#green,dashed]->
+:发送分支事务RM1提交请求;
+-[#green,dashed]->
 |RM1|
+-[#green,dashed]->
 :RM删除Undo log;
 |TC|
-:发生分支事务RM2提交请求;
+-[#green,dashed]->
+:发送分支事务RM2提交请求;
 |RM2|
+-[#green,dashed]->
 :RM删除Undo log;
 |TC|
-:检查所有RM提交完;
-:更新全局事务状态;
-note right
-{@link GlobalStatus#Committed}
-end note
-:清理全局事务资源;
-note right
-释放全局事务相关的锁，并从会话管理器中移除全局会话
-end note
-:结束全局事务;
+-[#green,dashed]->
+:待所有RM提交完;
+-[#green,dashed]->
 else (no)
+-[#blue]->
 |TM|
+-[#blue]->
 :发起全局事务回滚;
 note right
 分支事务执行发生异常
 end note
 |TC|
+-[#blue]->
+:遍历所有分支事务;
+-[#blue]->
+:发送分支事务RM1回滚请求;
+-[#blue]->
+|RM1|
+-[#blue]->
+:根据重做日志，回滚数据;
+note right
+数据前后镜像
+end note
+-[#blue]->
+|TC|
+-[#blue]->
+:发送分支事务RM2回滚请求;
+-[#blue]->
+|RM2|
+-[#blue]->
+:根据重做日志，回滚数据;
+-[#blue]->
+|TC|
+-[#blue]->
+:待所有RM回滚完;
+-[#blue]->
 endif
+:更新全局事务状态;
+note right
+提交成功为，
+GlobalStatus#Committed
+回滚成功为：
+Rollbacked，TimeoutRollbacked
+end note
+:清理全局事务资源;
+note right
+释放全局事务相关的锁，
+并从会话管理器及db中移除全局会话
+end note
 |TM|
-:全局事务结束;
+:结束全局事务;
 stop
 @enduml
